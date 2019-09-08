@@ -1,0 +1,102 @@
+* {
+    -fx-primary : #B4C1CC;
+    -fx-yellow: #FAAB1A;
+    -fx-light-gray: #B4C1CC;
+    -fx-dark-gray: #344955;
+    -fx-primary-text: WHITE;
+    -fx-black: #17262A;
+    -fx-light-pink: #FFF0E8;
+    -fx-dark-pink: #FEDBD0;
+    -fx-light-black: #424250;
+    -fx-dark-black: #373741;
+    -fx-light-green: #1EB980;
+    -fx-dark-green: #005D57;
+    -fx-blue: #5264AE;
+    -fx-dark-blue: #2979FF;
+    -fx-pure-black: #000000;
+    -fx-google-blue: #065FD4;
+
+    -fx-light-white-gray: #F2F2F2;
+    -fx-dark-white-gray: #D9D9D9;
+    -fx-dark-green: #138496;
+    -fx-light-green: #D4EDDA;
+    -fx-light-white: #F0FFFF;
+
+    -fx-soumya-purple: #7D2996;
+
+    -fx-lib-primarytext : #B2B2B2;
+    -fx-lib-primary : #2A2E37;
+}
+
+.root{
+    -fx-background-color: -fx-light-gray;
+    -fx-text-fill: -fx-yellow;
+}
+
+.tile {
+    -fx-padding: 0.7em 0.57em;
+    -fx-font-size: 15px;
+    -fx-font-weight: normal;
+    -fx-background-color: -fx-dark-gray;
+    -fx-text-fill: -fx-yellow;
+    -fx-pref-width: 200;
+    -fx-pref-height: 200;
+    -fx-font-smoothing-type: gray;
+    -fx-border-radius: 10 10 0 0;
+    -fx-effect:dropshadow(gaussian, #B4C1CC, 0.0, 0.0, 1.0, 1.0);
+}
+
+.tile: hover {
+    -fx-background-color: -fx-light-gray;
+    -fx-text-fill: -fx-soumya-purple;
+}
+
+.header {
+}
+
+.click-button {
+    -fx-padding: 0.7em 0.57em;
+    -fx-font-size: 15px;
+    -fx-font-weight: normal;
+    -fx-background-color: -fx-google-blue;
+    -fx-pref-width: 200;
+    -fx-text-fill: white;
+    -fx-min-width: 200;
+    -fx-font-smoothing-type: gray;
+    -fx-border-radius: 10 10 0 0;
+    /* -fx-effect:dropshadow(gaussian, #B4C1CC, 0.0, 0.0, 2.0, 2.0);*/
+}
+
+.click-button: hover {
+    -fx-background-color: -fx-yellow;
+    -fx-text-fill: -fx-dark-gray;
+}
+
+.connection-box {
+    -fx-background-color: -fx-dark-black;
+}
+
+.label-level-1 {
+
+}
+
+.label-level-2 {
+    -fx-font-size: 15px;
+    -fx-text-fill: -fx-yellow;
+}
+
+.label-level-3 {
+
+}
+
+.hbox-level-1 {
+
+}
+
+.hbox-level-2 {
+    -fx-background-color: -fx-dark-gray;
+}
+
+.hbox-level-3 {
+
+}

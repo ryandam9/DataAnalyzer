@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1000.0" prefWidth="1300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.analyzer.controllers.OptionsController">
+    <top>
+        <HBox alignment="CENTER_LEFT" prefHeight="189.0" prefWidth="1437.0" spacing="20.0" BorderPane.alignment="CENTER">
+            <children>
+                <Label text="Data Analyzer">
+                    <font>
+                        <Font name="Monotype Corsiva" size="60.0" />
+                    </font>
+                </Label>
+            </children>
+            <BorderPane.margin>
+                <Insets />
+            </BorderPane.margin>
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fx:id="scrollPane" BorderPane.alignment="CENTER">
+            <content>
+                <TilePane fx:id="tilePane" hgap="10.0" prefColumns="4" vgap="10.0">
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    </padding>
+                </TilePane>
+            </content>
+        </ScrollPane>
+    </center>
+    <bottom>
+        <HBox fx:id="statusBar" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+    </bottom>
+    <right>
+        <VBox fx:id="credentialsPane" prefHeight="711.0" prefWidth="430.0" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" />
+         </BorderPane.margin></VBox>
+    </right>
+</BorderPane>
