@@ -1,5 +1,6 @@
 package com.analyzer.controllers;
 
+import com.analyzer.ui.TileButton;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -52,7 +53,7 @@ public class OptionsController implements Initializable {
     private VBox createTile(String name, String imageName) {
         VBox tile = new VBox();
 
-        Button button = new Button(name);
+        Button button = new TileButton(name);
         button.getStyleClass().add("tile");
 
         String imagePath = "resources/images/" + imageName + ".png";
@@ -65,7 +66,7 @@ public class OptionsController implements Initializable {
                     credentialsPane.getChildren().remove(0);
                 }
 
-                String dbType = button.getText();
+                String dbType = ((TileButton) button).getDbType();
                 String fxml = "";
 
                 switch (dbType) {

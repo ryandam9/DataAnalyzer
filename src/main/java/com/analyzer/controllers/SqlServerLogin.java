@@ -5,10 +5,12 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -63,12 +65,12 @@ public class SqlServerLogin implements Initializable {
     class DBConnectionTask extends Task<Connection> {
         private final String userName;
         private final String serverInstance;
-        private final String port;
+        private final String portNo;
 
-        public DBConnectionTask(String userName, String serverInstance, String port) {
+        public DBConnectionTask(String userName, String serverInstance, String portNo) {
             this.userName = userName;
             this.serverInstance = serverInstance;
-            this.port = port;
+            this.portNo = portNo;
         }
 
         @Override
@@ -83,7 +85,7 @@ public class SqlServerLogin implements Initializable {
 
             Connection connection = null;
             String connectionUrl =
-                    "jdbc:sqlserver://" + serverInstance + ":" + port + ";";
+                    "jdbc:sqlserver://" + serverInstance + ":" + portNo + ";";
 
             connectionUrl += "integratedSecurity=true;";
             connectionUrl += "user=" + userName + ";";
@@ -115,8 +117,28 @@ public class SqlServerLogin implements Initializable {
                 while (resultSet.next()) {
                     String resultSetString = resultSet.getString(1);
                     Platform.runLater(() -> status.setText(status.getText() + "\nDatabase Version: " + resultSetString));
-                }
 
+                    Platform.runLater(() -> {
+                        // Since the connection succeeded, Disable the Text boxes, and the button.
+                        userId.setDisable(true);
+                        dbServer.setDisable(true);
+                        port.setDisable(true);
+                        connectBtn.setVisible(false);
+
+                        HBox hbox = new HBox();
+                        hbox.setAlignment(Pos.CENTER_RIGHT);
+
+                        Button nextBtn = new Button("Next");
+                        nextBtn.getStyleClass().add("click-button");
+
+                        hbox.getChildren().add(nextBtn);
+                        statusBox.getChildren().add(hbox);
+
+                        nextBtn.setOnAction(event -> {
+                            System.out.println("SQL Server Next steps!");
+                        });
+                    });
+                }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

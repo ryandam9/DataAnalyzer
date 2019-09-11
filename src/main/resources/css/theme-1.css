@@ -48,8 +48,8 @@
 }
 
 .tile: hover {
-    -fx-background-color: WHITE;
-    -fx-text-fill: -fx-soumya-purple;
+    -fx-background-color: -fx-light-white-gray;
+    -fx-text-fill: -fx-google-blue;
 }
 
 .header {
@@ -169,6 +169,22 @@
 	-fx-padding: 5px;
 }
 
+/* To fill the area not occupied by Scroll Pane */
 .scroll-pane .viewport {
   -fx-background-color: -fx-light-black ;
+}
+
+/* Text Box Class */
+.text-field {
+    -fx-background-insets: 0, 0 0 1 0 ;
+    -fx-background-radius: 5 ;
+    -fx-font-family: "consolas";
+    -fx-font-size: 12pt;
+    -fx-background-color: WHITE;
+    -fx-text-fill: -fx-dark-black;
+}
+
+.text-field:focused {
+    -fx-background-color: -fx-light-black;
+    -fx-text-fill: -fx-yellow;
 }
