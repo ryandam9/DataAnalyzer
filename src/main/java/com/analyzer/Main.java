@@ -16,7 +16,7 @@ public class Main extends Application {
         URL url = new File("resources/ui/options.fxml").toURI().toURL();
         Parent root = FXMLLoader.load(url);
 
-        Scene scene = new Scene(root, 1300, 1000);
+        Scene scene = new Scene(root, 1320, 1000);
         String cssFile = new File("resources/css/theme-1.css").toURI().toURL().toString();
         scene.getStylesheets().add(cssFile);
         stage.setScene(scene);

@@ -29,7 +29,7 @@
 }
 
 .root{
-    -fx-background-color: -fx-light-gray;
+    -fx-background-color: -fx-light-black;
     -fx-text-fill: -fx-yellow;
 }
 
@@ -37,17 +37,18 @@
     -fx-padding: 0.7em 0.57em;
     -fx-font-size: 15px;
     -fx-font-weight: normal;
-    -fx-background-color: -fx-dark-gray;
-    -fx-text-fill: -fx-yellow;
+    -fx-background-color: white;
+    -fx-text-fill: -fx-dark-black;
     -fx-pref-width: 200;
     -fx-pref-height: 200;
     -fx-font-smoothing-type: gray;
     -fx-border-radius: 10 10 0 0;
     -fx-effect:dropshadow(gaussian, #B4C1CC, 0.0, 0.0, 1.0, 1.0);
+    -fx-content-display: bottom;
 }
 
 .tile: hover {
-    -fx-background-color: -fx-light-gray;
+    -fx-background-color: WHITE;
     -fx-text-fill: -fx-soumya-purple;
 }
 
@@ -77,7 +78,9 @@
 }
 
 .label-level-1 {
-
+    -fx-font-size: 50px;
+    -fx-text-fill: -fx-yellow;
+    -fx-font-family: "Monotype Corsiva";
 }
 
 .label-level-2 {
@@ -99,4 +102,73 @@
 
 .hbox-level-3 {
 
+}
+
+.error-message {
+/*
+    -fx-background-color: -fx-text-box-border, -fx-background ;
+    -fx-background-insets: 0, 0 0 1 0 ;
+    -fx-background-radius: 0 ;*/
+    -fx-font-family: "consolas";
+    -fx-font-size: 10pt;
+    -fx-text-fill: -fx-yellow;
+}
+
+/* Scroll bar changes */
+/* Source - https://blog.ngopal.com.np/2012/07/11/customize-scrollbar-via-css/ */
+.scroll-pane {
+	-fx-border-color:derive(gray,80%);
+}
+
+/* The main scrollbar CSS class of ListView */
+.scroll-pane .scroll-bar:horizontal ,
+.scroll-pane  .scroll-bar:vertical{
+    -fx-background-color:transparent;
+ }
+
+/* The increment and decrement button CSS class of scrollbar */
+.scroll-pane .increment-button ,.scroll-pane .decrement-button {
+    -fx-background-color:transparent;
+	-fx-border-color:derive(gray,80%);
+}
+
+/* The main scrollbar **track** CSS class  */
+.scroll-pane .scroll-bar:horizontal .track ,
+.scroll-pane .scroll-bar:vertical .track{
+     -fx-background-color: transparent;
+	 -fx-border-color:derive(gray,80%);
+	 -fx-background-radius: 0em;
+}
+
+/* The main scrollbar **thumb** CSS class which we drag every time (movable) */
+.scroll-pane .scroll-bar:horizontal .thumb,
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color:derive(black,90%);
+	-fx-background-insets: 0, 0, 0;
+	-fx-background-radius: 0em;
+}
+
+.scroll-pane .scroll-bar:horizontal:hover .track ,
+.scroll-pane .scroll-bar:horizontal:pressed .track ,
+.scroll-pane .scroll-bar:vertical:hover .track,
+.scroll-pane .scroll-bar:vertical:pressed .track{
+     -fx-background-color: derive(-fx-blue,20%);
+	 -fx-opacity: 0.2;
+	 -fx-background-radius: 0em;
+}
+
+/* The main scrollbar **thumb** CSS class on event of "hover" and "pressed" */
+.scroll-pane .scroll-bar .thumb:hover,
+.scroll-pane .scroll-bar .thumb:pressed{
+    -fx-background-color: derive(-fx-blue,50%);
+}
+
+.scroll-pane .increment-button:hover ,.scroll-pane .decrement-button:hover {
+    -fx-background-color:derive(gray,100%);
+	-fx-border-color:derive(-fx-blue,80%);
+	-fx-padding: 5px;
+}
+
+.scroll-pane .viewport {
+  -fx-background-color: -fx-light-black ;
 }

@@ -3,9 +3,10 @@ package com.analyzer.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.TilePane;
@@ -30,25 +31,33 @@ public class OptionsController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        tilePane.setMaxWidth(Region.USE_PREF_SIZE);
-
-        tilePane.getChildren().add(createTile("Oracle", ""));
-        tilePane.getChildren().add(createTile("SQL Server", ""));
-        tilePane.getChildren().add(createTile("MySQL", ""));
-        tilePane.getChildren().add(createTile("Dynamo DB", ""));
+        tilePane.getChildren().add(createTile("Oracle", "oracle"));
+        tilePane.getChildren().add(createTile("SQL Server", "sqlserver"));
+        tilePane.getChildren().add(createTile("MySQL", "mysql"));
+        tilePane.getChildren().add(createTile("Dynamo DB", "dynamoDB"));
 
         scrollPane.setContent(tilePane);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
         borderPane.setCenter(scrollPane);
+        tilePane.setMaxWidth(Region.USE_PREF_SIZE);
+        credentialsPane.prefHeightProperty().bind(tilePane.prefHeightProperty());
+        scrollPane.setFitToWidth(true);
+//        scrollPane.setFitToHeight(true);
+
+        borderPane.getStyleClass().add("root");
     }
 
-    private VBox createTile(String name, String imagePath) {
+    private VBox createTile(String name, String imageName) {
         VBox tile = new VBox();
 
         Button button = new Button(name);
         button.getStyleClass().add("tile");
+
+        String imagePath = "resources/images/" + imageName + ".png";
+        Image image = new Image(new File(imagePath).toURI().toString(), 150, 150, false, false);
+        button.setGraphic(new ImageView(image));
 
         button.setOnAction(event -> {
             try {
@@ -61,7 +70,7 @@ public class OptionsController implements Initializable {
 
                 switch (dbType) {
                     case "Oracle":
-                        fxml  = "oracle_login.fxml";
+                        fxml = "oracle_login.fxml";
                         break;
 
                     case "SQL Server":
@@ -79,10 +88,11 @@ public class OptionsController implements Initializable {
 
                 URL url = new File("resources/ui/" + fxml).toURI().toURL();
                 FXMLLoader loader = new FXMLLoader(url);
-                Parent parent = (Parent) loader.load();
+                VBox parent = (VBox) loader.load();
                 SqlServerLogin sqlServerLogin = loader.getController();
 
                 credentialsPane.getChildren().addAll(parent);
+                parent.prefHeightProperty().bind(scrollPane.heightProperty());
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
