@@ -48,8 +48,9 @@
 }
 
 .tile: hover {
-    -fx-background-color: -fx-light-white-gray;
     -fx-text-fill: -fx-google-blue;
+    -fx-border-width: 0px 0px 5px 0px;
+    -fx-border-color: -fx-yellow;
 }
 
 .header {
@@ -117,7 +118,8 @@
 /* Scroll bar changes */
 /* Source - https://blog.ngopal.com.np/2012/07/11/customize-scrollbar-via-css/ */
 .scroll-pane {
-	-fx-border-color:derive(gray,80%);
+	/* -fx-border-color:derive(,80%); */
+	-fx-border-color: -fx-dark-black;
 }
 
 /* The main scrollbar CSS class of ListView */
