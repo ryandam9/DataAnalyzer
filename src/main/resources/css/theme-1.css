@@ -11,6 +11,7 @@
     -fx-dark-black: #373741;
     -fx-light-green: #1EB980;
     -fx-dark-green: #005D57;
+    -fx-green: #129622;
     -fx-blue: #5264AE;
     -fx-dark-blue: #2979FF;
     -fx-pure-black: #000000;
@@ -50,7 +51,7 @@
 .tile: hover {
     -fx-text-fill: -fx-google-blue;
     -fx-border-width: 0px 0px 5px 0px;
-    -fx-border-color: -fx-yellow;
+    -fx-border-color: -fx-green;
 }
 
 .header {
@@ -59,23 +60,19 @@
 .click-button {
     -fx-padding: 0.7em 0.57em;
     -fx-font-size: 15px;
-    -fx-font-weight: normal;
-    -fx-background-color: -fx-google-blue;
-    -fx-pref-width: 200;
+    -fx-font-weight: bold;
+    -fx-background-color: -fx-green;
+    -fx-pref-width: 150;
     -fx-text-fill: white;
-    -fx-min-width: 200;
+    -fx-min-width: 150;
     -fx-font-smoothing-type: gray;
     -fx-border-radius: 10 10 0 0;
     /* -fx-effect:dropshadow(gaussian, #B4C1CC, 0.0, 0.0, 2.0, 2.0);*/
 }
 
 .click-button: hover {
-    -fx-background-color: -fx-yellow;
-    -fx-text-fill: -fx-dark-gray;
-}
-
-.connection-box {
-    -fx-background-color: -fx-dark-black;
+    -fx-background-color: white;
+    -fx-text-fill: -fx-green;
 }
 
 .label-level-1 {
@@ -87,6 +84,7 @@
 .label-level-2 {
     -fx-font-size: 15px;
     -fx-text-fill: -fx-yellow;
+    -fx-font-weight: bold;
 }
 
 .label-level-3 {
@@ -94,11 +92,17 @@
 }
 
 .hbox-level-1 {
-
+    -fx-background-color: -fx-dark-black;
+    -fx-border-color: -fx-light-black;
+    -fx-border-width: 1px;
+    -fx-background-radius: 15.0;
 }
 
 .hbox-level-2 {
     -fx-background-color: -fx-dark-gray;
+    -fx-border-color: -fx-light-black;
+    -fx-border-width: 1px;
+    -fx-background-radius: 15.0;
 }
 
 .hbox-level-3 {
@@ -115,65 +119,40 @@
     -fx-text-fill: -fx-yellow;
 }
 
-/* Scroll bar changes */
-/* Source - https://blog.ngopal.com.np/2012/07/11/customize-scrollbar-via-css/ */
+.connection-box {
+    -fx-background-color: -fx-dark-black;
+    -fx-border-color: -fx-light-black;
+    -fx-border-width: 1px;
+    -fx-background-radius: 15.0;
+}
+
 .scroll-pane {
-	/* -fx-border-color:derive(,80%); */
-	-fx-border-color: -fx-dark-black;
+    -fx-background-color: -fx-light-black;
+	-fx-border-color: -fx-light-black;
+    -fx-border-width: 1px;
+    -fx-background-radius: 15.0;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 }
 
-/* The main scrollbar CSS class of ListView */
-.scroll-pane .scroll-bar:horizontal ,
-.scroll-pane  .scroll-bar:vertical{
-    -fx-background-color:transparent;
- }
-
-/* The increment and decrement button CSS class of scrollbar */
-.scroll-pane .increment-button ,.scroll-pane .decrement-button {
-    -fx-background-color:transparent;
-	-fx-border-color:derive(gray,80%);
+.scroll-pane:focused {
+    -fx-background-insets: 0;
 }
 
-/* The main scrollbar **track** CSS class  */
-.scroll-pane .scroll-bar:horizontal .track ,
-.scroll-pane .scroll-bar:vertical .track{
-     -fx-background-color: transparent;
-	 -fx-border-color:derive(gray,80%);
-	 -fx-background-radius: 0em;
-}
-
-/* The main scrollbar **thumb** CSS class which we drag every time (movable) */
-.scroll-pane .scroll-bar:horizontal .thumb,
-.scroll-pane .scroll-bar:vertical .thumb {
-    -fx-background-color:derive(black,90%);
-	-fx-background-insets: 0, 0, 0;
-	-fx-background-radius: 0em;
-}
-
-.scroll-pane .scroll-bar:horizontal:hover .track ,
-.scroll-pane .scroll-bar:horizontal:pressed .track ,
-.scroll-pane .scroll-bar:vertical:hover .track,
-.scroll-pane .scroll-bar:vertical:pressed .track{
-     -fx-background-color: derive(-fx-blue,20%);
-	 -fx-opacity: 0.2;
-	 -fx-background-radius: 0em;
-}
-
-/* The main scrollbar **thumb** CSS class on event of "hover" and "pressed" */
-.scroll-pane .scroll-bar .thumb:hover,
-.scroll-pane .scroll-bar .thumb:pressed{
-    -fx-background-color: derive(-fx-blue,50%);
-}
-
-.scroll-pane .increment-button:hover ,.scroll-pane .decrement-button:hover {
-    -fx-background-color:derive(gray,100%);
-	-fx-border-color:derive(-fx-blue,80%);
-	-fx-padding: 5px;
+.scroll-pane .corner {
+    -fx-background-insets: 0;
 }
 
 /* To fill the area not occupied by Scroll Pane */
 .scroll-pane .viewport {
-  -fx-background-color: -fx-light-black ;
+  -fx-background-color: -fx-light-black;
+}
+
+.tile-pane {
+    -fx-background-color: -fx-dark-black;
+    -fx-border-color: -fx-light-black;
+    -fx-border-width: 1px;
+    -fx-background-radius: 15.0;
 }
 
 /* Text Box Class */
@@ -189,4 +168,15 @@
 .text-field:focused {
     -fx-background-color: -fx-light-black;
     -fx-text-fill: -fx-yellow;
+}
+
+.status-bar {
+   -fx-background-color: -fx-dark-black;
+   -fx-text-fill: -fx-yellow;
+   -fx-font-size: 15px;
+   -fx-font-weight: normal;
+   -fx-font-family: "consolas";
+   -fx-border-color: -fx-dark-black;
+   -fx-border-width: 1px;
+   -fx-background-radius: 15.0;
 }

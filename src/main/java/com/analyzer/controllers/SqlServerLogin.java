@@ -1,5 +1,6 @@
 package com.analyzer.controllers;
 
+import com.analyzer.Utils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -128,7 +129,7 @@ public class SqlServerLogin implements Initializable {
                         HBox hbox = new HBox();
                         hbox.setAlignment(Pos.CENTER_RIGHT);
 
-                        Button nextBtn = new Button("Next");
+                        Button nextBtn = new Button("NEXT");
                         nextBtn.getStyleClass().add("click-button");
 
                         hbox.getChildren().add(nextBtn);
@@ -136,6 +137,7 @@ public class SqlServerLogin implements Initializable {
 
                         nextBtn.setOnAction(event -> {
                             System.out.println("SQL Server Next steps!");
+                            Utils.createState("sql_server.fxml", "theme-1.css");
                         });
                     });
                 }

@@ -11,7 +11,7 @@
     <children>
         <HBox alignment="CENTER" prefHeight="92.0" prefWidth="430.0" styleClass="hbox-level-2">
             <children>
-                <Label styleClass="label-level-2" text="SQL Server Login">
+                <Label styleClass="label-level-2" text="SQL SERVER LOGIN">
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                     </padding>
@@ -27,7 +27,7 @@
         <TextField fx:id="userId" prefHeight="50.0" prefWidth="410.0" promptText="User ID" />
         <TextField fx:id="dbServer" layoutX="20.0" layoutY="122.0" prefHeight="50.0" prefWidth="410.0" promptText="DB Server" />
         <TextField fx:id="port" layoutX="20.0" layoutY="189.0" prefHeight="50.0" prefWidth="410.0" promptText="Port" />
-        <Button fx:id="connectBtn" mnemonicParsing="false" onAction="#connectToDb" styleClass="click-button" text="Connect">
+        <Button fx:id="connectBtn" mnemonicParsing="false" onAction="#connectToDb" styleClass="click-button" text="CONNECT">
             <VBox.margin>
                 <Insets left="200.0" />
             </VBox.margin>

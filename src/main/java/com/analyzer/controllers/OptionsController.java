@@ -36,6 +36,7 @@ public class OptionsController implements Initializable {
         tilePane.getChildren().add(createTile("SQL Server", "sqlserver"));
         tilePane.getChildren().add(createTile("MySQL", "mysql"));
         tilePane.getChildren().add(createTile("Dynamo DB", "dynamoDB"));
+        tilePane.getChildren().add(createTile("DB2", "db2"));
 
         scrollPane.setContent(tilePane);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
@@ -84,6 +85,10 @@ public class OptionsController implements Initializable {
 
                     case "Dynamo DB":
                         fxml = "dynamo_login.fxml";
+                        break;
+
+                    case "DB2":
+                        fxml = "db2.fxml";
                         break;
                 }
 
