@@ -95,7 +95,8 @@ public class OptionsController implements Initializable {
                 URL url = new File("resources/ui/" + fxml).toURI().toURL();
                 FXMLLoader loader = new FXMLLoader(url);
                 VBox parent = (VBox) loader.load();
-                SqlServerLogin sqlServerLogin = loader.getController();
+
+//                SqlServerLogin sqlServerLogin = loader.getController();
 
                 credentialsPane.getChildren().addAll(parent);
                 parent.prefHeightProperty().bind(scrollPane.heightProperty());

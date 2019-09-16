@@ -162,12 +162,12 @@
     -fx-font-family: "consolas";
     -fx-font-size: 12pt;
     -fx-background-color: WHITE;
-    -fx-text-fill: -fx-dark-black;
+    -fx-text-fill: -fx-pure-black;
 }
 
 .text-field:focused {
-    -fx-background-color: -fx-light-black;
-    -fx-text-fill: -fx-yellow;
+    -fx-background-color: -fx-green;
+    -fx-text-fill: white;
 }
 
 .status-bar {
@@ -179,4 +179,10 @@
    -fx-border-color: -fx-dark-black;
    -fx-border-width: 1px;
    -fx-background-radius: 15.0;
+}
+
+.progress-indicator {
+    -fx-progress-color: -fx-green;
+    -fx-pref-width: 75;
+    -fx-pref-height: 75;
 }
