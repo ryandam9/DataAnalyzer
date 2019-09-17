@@ -10,6 +10,8 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.net.URL;
 
+import static com.analyzer.AppLogger.logger;
+
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {

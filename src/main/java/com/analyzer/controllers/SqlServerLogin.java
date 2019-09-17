@@ -1,5 +1,6 @@
 package com.analyzer.controllers;
 
+import com.analyzer.DBConnections;
 import com.analyzer.Utils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -16,7 +17,6 @@ import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ResourceBundle;
@@ -85,18 +85,13 @@ public class SqlServerLogin implements Initializable {
             }
 
             Connection connection = null;
-            String connectionUrl =
-                    "jdbc:sqlserver://" + serverInstance + ":" + portNo + ";";
-
-            connectionUrl += "integratedSecurity=true;";
-            connectionUrl += "user=" + userName + ";";
 
             try {
-                connection = DriverManager.getConnection(connectionUrl);
+                connection = DBConnections.getSqlServerConnection(userName, serverInstance, portNo);
             } catch (Exception e) {
-                final String errorMessage = "Unable to connect to the DB using " + connectionUrl + ";" + e.getMessage();
+                final String errorMessage = "Unable to connect to the DB using " + userName + ";" + e.getMessage();
                 Platform.runLater(() -> status.setText(errorMessage));
-                throw new RuntimeException("Unable to connect to the DB using " + connectionUrl);
+                throw new RuntimeException("Unable to connect to the DB using " + userName);
             }
 
             Platform.runLater(() -> status.setText("Connection acquired !"));
@@ -137,7 +132,7 @@ public class SqlServerLogin implements Initializable {
 
                         nextBtn.setOnAction(event -> {
                             System.out.println("SQL Server Next steps!");
-                            Utils.createState("sql_server.fxml", "theme-1.css");
+                            Utils.createStage("sql_server.fxml", "theme-1.css");
                         });
                     });
                 }

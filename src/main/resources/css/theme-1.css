@@ -186,3 +186,30 @@
     -fx-pref-width: 75;
     -fx-pref-height: 75;
 }
+
+/*
+.radio-button .radio {
+    -fx-border-color: white;
+    -fx-background-color: -fx-green;
+    -fx-background-image: null;
+}
+.radio-button .radio:selected {
+    -fx-background-color: -fx-green;
+    -fx-background-image: null;
+}
+.radio-button -radio:armed {
+    -fx-background-color: -fx-green;
+    -fx-background-image: null;
+}
+.radio-button -radio:determinate {
+    -fx-background-color: -fx-green;
+    -fx-background-image: null;
+}
+.radio-button -radio:indeterminate {
+    -fx-background-color: -fx-green;
+    -fx-background-image: null;
+}
+.radio-button .dot {
+    -fx-background-radius: 5px;
+}
+*/

@@ -8,10 +8,14 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 
+import static com.analyzer.AppLogger.logger;
+
 public class Utils {
-    public static void createState(String fxmlFileName, String cssFileName) {
+    public static void createStage(String fxmlFileName, String cssFileName) {
         try {
             URL url = new File("resources/ui/" + fxmlFileName).toURI().toURL();
             FXMLLoader loader = new FXMLLoader(url);
@@ -30,4 +34,19 @@ public class Utils {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Log an Exception
+     * @param e
+     */
+    public static void logStackTrace(Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String sStackTrace = sw.toString(); // stack trace as a string
+        logger.debug(sStackTrace);
+    }
+
+
+
 }

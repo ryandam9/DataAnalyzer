@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Loggers>
+        <Logger name="com.analyzer.AppLogger" level = "TRACE" additivity="false">
+            <AppenderRef ref="file" />
+        </Logger>
+
+        <Root level="TRACE">
+            <AppenderRef ref="file" level="WARN"/>
+            <AppenderRef ref="file" level="DEBUG"/>
+        </Root>
+    </Loggers>
+
+    <Appenders>
+        <File name="file" fileName="myApp.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m %ex%n</Pattern>
+            </PatternLayout>
+        </File>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="Class:%c\t Method:%M\t Message:%m%n"/>
+        </Console>
+    </Appenders>
+</Configuration>
