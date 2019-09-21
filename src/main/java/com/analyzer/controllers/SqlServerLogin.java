@@ -1,7 +1,7 @@
 package com.analyzer.controllers;
 
-import com.analyzer.DBConnections;
 import com.analyzer.Utils;
+import com.dbutils.common.DBConnections;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -19,6 +19,8 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ResourceBundle;
+
+import static com.analyzer.AppLogger.logger;
 
 public class SqlServerLogin implements Initializable {
     @FXML
@@ -59,6 +61,7 @@ public class SqlServerLogin implements Initializable {
         final String port = this.port.getText();
 
         task = new DBConnectionTask(userId, dbServer, port);
+        logger.debug("Background thread is getting executed to obtain a DB Connection.");
         new Thread(task).start();
     }
 
@@ -90,10 +93,12 @@ public class SqlServerLogin implements Initializable {
             } catch (Exception e) {
                 final String errorMessage = "Unable to connect to the DB using " + userName + ";" + e.getMessage();
                 Platform.runLater(() -> status.setText(errorMessage));
+                logger.debug(errorMessage);
                 throw new RuntimeException("Unable to connect to the DB using " + userName);
             }
 
             Platform.runLater(() -> status.setText("Connection acquired !"));
+            logger.debug("DB Connection acquired.");
             return connection;
         }
 
