@@ -2,6 +2,8 @@ package com.analyzer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import static com.analyzer.Utils.logStackTrace;
 
@@ -32,5 +34,26 @@ public class DBConnections {
         }
 
         return connection;
+    }
+
+    /**
+     * Executes a SELECT Query
+     *
+     * @param connection DB Connection object
+     * @param query Query to be executed
+     * @return Result set
+     * @throws Exception
+     */
+    public static ResultSet execReadOnlyQuery(Connection connection, String query) throws Exception {
+        ResultSet resultSet = null;
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            resultSet = preparedStatement.executeQuery();
+        } catch (Exception ex) {
+            throw ex;
+        }
+
+        return resultSet;
     }
 }

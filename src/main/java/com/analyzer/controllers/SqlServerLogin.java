@@ -17,7 +17,6 @@ import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ResourceBundle;
 
@@ -107,8 +106,7 @@ public class SqlServerLogin implements Initializable {
             ResultSet resultSet;
 
             try {
-                PreparedStatement preparedStatement = connection.prepareStatement("SELECT @@VERSION");
-                resultSet = preparedStatement.executeQuery();
+                resultSet = DBConnections.execReadOnlyQuery(connection, "SELECT @@VERSION");
 
                 while (resultSet.next()) {
                     String resultSetString = resultSet.getString(1);
