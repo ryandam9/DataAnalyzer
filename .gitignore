@@ -3,3 +3,4 @@ out/
 *.jar
 target/
 .idea/
+lib/
