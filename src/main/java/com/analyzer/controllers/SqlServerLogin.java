@@ -65,6 +65,9 @@ public class SqlServerLogin implements Initializable {
         new Thread(task).start();
     }
 
+    /**
+     * This is the body of the Background task to get a Database connection.
+     */
     class DBConnectionTask extends Task<Connection> {
         private final String userName;
         private final String serverInstance;
@@ -102,6 +105,9 @@ public class SqlServerLogin implements Initializable {
             return connection;
         }
 
+        /**
+         * This gets executed only when the call() method above executes without any issues.
+         */
         @Override
         public void succeeded() {
             super.succeeded();
@@ -135,7 +141,7 @@ public class SqlServerLogin implements Initializable {
 
                         nextBtn.setOnAction(event -> {
                             System.out.println("SQL Server Next steps!");
-                            Utils.createStage("sql_server.fxml", "theme-1.css");
+                            Utils.createStage("sql_server.fxml", "theme-1.css", this.serverInstance, connection, "SQL Server");
                         });
                     });
                 }
@@ -144,6 +150,10 @@ public class SqlServerLogin implements Initializable {
             }
         }
 
+        /**
+         * This gets executed after the execution of call() method irrespective of its success/failure. It hides the
+         * Progress Indicator.
+         */
         @Override
         protected void done() {
             super.done();

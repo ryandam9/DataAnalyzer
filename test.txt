@@ -1,0 +1,114 @@
+ryand
+DESKTOP-0NS7D55\SQLEXPRESS
+AdventureWorks
+65203
+SELECT * FROM INFORMATION_SCHEMA.tables
+
+java -Dlog4j.configurationFile=./location/log4j2-custom.xml
+
+
+# https://sookocheff.com/post/java/local-maven-repository/
+cd ~/Desktop/DataAnalyzer/lib
+mvn deploy:deploy-file -Durl=file://C:\Users\ryand\.m2\repository\com\dbutils\1.0-SNAPSHOT -Dfile=dbutils-1.0-SNAPSHOT.jar -DgroupId=com -DartifactId=dbutils -Dpackaging=jar -Dversion=1.0-SNAPSHOT
+
+ <repositories>
+        <repository>
+            <id>project.local</id>
+            <name>project</name>
+            <url>file:${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+	
+
+        <dependency>
+            <groupId>com</groupId>
+            <artifactId>dbutils</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>system</scope>
+			<systemPath>${basedir}/lib/dbutils-1.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+		
+
+mvn clean install
+java -classpath .:resources/lib/jsch-0.1.55.jar --module-path $PATH_TO_FX --add-modules javafx.controls --add-modules javafx.fxml -jar ./JobMonitor-1.0-SNAPSHOT.jar
+
+java --module-path $PATH_TO_FX --add-modules javafx.controls --add-modules javafx.fxml -jar ./unnamed.jar
+
+
+ubuntu
+54.89.192.48
+C:\Users\ryand\Desktop\green.pem
+
+ubuntu
+54.174.50.209
+/home/ubuntu/green.pem
+
+
+
+
+ssh -i ~/Desktop/green.pem ubuntu@54.89.192.48
+scp -i ~/Desktop/green.pem ~/Desktop/green.pem ubuntu@54.89.192.48:/home/ubuntu
+
+ssh -i /home/ubuntu/green.pem ubuntu@54.174.50.209
+
+touch /home/ubuntu/test.txt
+/home/ubuntu
+
+
+/* Scroll bar changes */
+/* Source - https://blog.ngopal.com.np/2012/07/11/customize-scrollbar-via-css/ */
+.scroll-pane {
+	/* -fx-border-color:derive(,80%); */
+	-fx-border-color: -fx-dark-black;
+    -fx-border-width: 1px;
+    -fx-background-radius: 15.0;
+}
+
+/* The main scrollbar CSS class of ListView */
+.scroll-pane .scroll-bar:horizontal ,
+.scroll-pane  .scroll-bar:vertical{
+    -fx-background-color:transparent;
+ }
+
+/* The increment and decrement button CSS class of scrollbar */
+.scroll-pane .increment-button ,.scroll-pane .decrement-button {
+    -fx-background-color:transparent;
+	-fx-border-color:derive(gray,80%);
+}
+
+/* The main scrollbar **track** CSS class  */
+.scroll-pane .scroll-bar:horizontal .track ,
+.scroll-pane .scroll-bar:vertical .track{
+     -fx-background-color: transparent;
+	 -fx-border-color:derive(gray,80%);
+	 -fx-background-radius: 0em;
+}
+
+/* The main scrollbar **thumb** CSS class which we drag every time (movable) */
+.scroll-pane .scroll-bar:horizontal .thumb,
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color:derive(black,90%);
+	-fx-background-insets: 0, 0, 0;
+	-fx-background-radius: 0em;
+}
+
+.scroll-pane .scroll-bar:horizontal:hover .track ,
+.scroll-pane .scroll-bar:horizontal:pressed .track ,
+.scroll-pane .scroll-bar:vertical:hover .track,
+.scroll-pane .scroll-bar:vertical:pressed .track{
+     -fx-background-color: derive(-fx-blue,20%);
+	 -fx-opacity: 0.2;
+	 -fx-background-radius: 0em;
+}
+
+/* The main scrollbar **thumb** CSS class on event of "hover" and "pressed" */
+.scroll-pane .scroll-bar .thumb:hover,
+.scroll-pane .scroll-bar .thumb:pressed{
+    -fx-background-color: derive(-fx-blue,50%);
+}
+
+.scroll-pane .increment-button:hover ,.scroll-pane .decrement-button:hover {
+    -fx-background-color:derive(gray,100%);
+	-fx-border-color:derive(-fx-blue,80%);
+	-fx-padding: 5px;
+}

@@ -213,3 +213,16 @@
     -fx-background-radius: 5px;
 }
 */
+
+.query-window {
+    -fx-background-insets: 0, 0 0 1 0 ;
+    -fx-font-family: "consolas";
+    -fx-font-size: 10pt;
+    -fx-background-color: -fx-light-white-gray;
+    -fx-text-fill: -fx-pure-black;
+}
+
+.query-results-window {
+   -fx-font-family: "consolas";
+   -fx-font-size: 10pt;
+}
