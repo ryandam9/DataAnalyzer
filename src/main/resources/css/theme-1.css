@@ -88,7 +88,9 @@
 }
 
 .label-level-3 {
-
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-yellow;
+    -fx-font-weight: bold;
 }
 
 .hbox-level-1 {
