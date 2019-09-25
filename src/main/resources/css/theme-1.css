@@ -87,6 +87,12 @@
     -fx-font-weight: bold;
 }
 
+.label-level-2-black {
+    -fx-font-size: 20px;
+    -fx-text-fill: -fx-dark-black;
+    -fx-font-weight: bold;
+}
+
 .label-level-3 {
     -fx-font-size: 12px;
     -fx-text-fill: -fx-yellow;
@@ -163,13 +169,13 @@
     -fx-background-radius: 5 ;
     -fx-font-family: "consolas";
     -fx-font-size: 12pt;
-    -fx-background-color: WHITE;
+    -fx-background-color: -fx-dark-white-gray;
     -fx-text-fill: -fx-pure-black;
 }
 
 .text-field:focused {
-    -fx-background-color: -fx-green;
-    -fx-text-fill: white;
+    -fx-background-color: -fx-light-black;
+    -fx-text-fill: WHITE;
 }
 
 .status-bar {
