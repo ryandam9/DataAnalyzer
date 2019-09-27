@@ -244,3 +244,66 @@
    -fx-font-family: "consolas";
    -fx-font-size: 10pt;
 }
+
+.tile-label {
+    -fx-font-family: "consolas";
+    -fx-font-smoothing-type: gray;
+    -fx-font-weight: normal;
+    -fx-text-fill: -fx-dark-green;
+    -fx-font-size : 15pt;
+    -fx-focus-color: -fx-primary-text;
+}
+
+.tile-box {
+    -fx-pref-width: 250;
+    -fx-pref-height: 250;
+    -fx-alignment: center;
+    -fx-padding: 10;
+    -fx-spacing: 30pt;
+    -fx-border-color: -fx-light-black;
+    -fx-border-width: 1px;
+    -fx-background-radius: 15.0;
+    -fx-background-color: -fx-dark-black;
+}
+
+.progress-indicator {
+    -fx-progress-color: #fcb503;
+    -fx-pref-width: 75;
+    -fx-pref-height: 75;
+}
+
+.job-success {
+    -fx-background-color: -fx-green;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.job-success:hover {
+    -fx-background-color: white;
+    -fx-text-fill: -fx-green;
+    -fx-font-weight: bold;
+}
+
+.job-failed {
+    -fx-background-color: -fx-red;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.job-failed:hover {
+    -fx-background-color: -fx-soumya-purple;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.job-running {
+    -fx-background-color: #0388fc;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.job-running:hover {
+    -fx-background-color: white;
+    -fx-text-fill: #0388fc;
+    -fx-font-weight: bold;
+}
