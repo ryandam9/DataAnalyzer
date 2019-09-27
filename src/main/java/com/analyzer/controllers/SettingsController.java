@@ -1,5 +1,6 @@
 package com.analyzer.controllers;
 
+import com.analyzer.Utils;
 import com.analyzer.classes.AppData;
 import com.dbutils.common.TableDetail;
 import javafx.beans.property.ListProperty;
@@ -15,6 +16,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import static com.analyzer.AppLogger.logger;
 
 public class SettingsController implements Initializable {
     @FXML
@@ -53,7 +56,23 @@ public class SettingsController implements Initializable {
 
     @FXML
     private void performDatascan(ActionEvent event) {
+        ObservableList<Integer> selectedIndices = objectsToScan.getSelectionModel().getSelectedIndices();
+        String datascanScope = "";
 
+        if (databaseBtn.isSelected())
+            datascanScope = "database";
+        else if (schemaBtn.isSelected())
+            datascanScope = "schema";
+        else if (tableBtn.isSelected())
+            datascanScope = "table";
+
+        logger.debug("Scope: " + datascanScope);
+
+        for(Integer index : selectedIndices){
+            logger.debug(listData.get(index));
+        }
+
+        Utils.createStage("scan_dashboard.fxml", "theme-1.css", "Dashboard");
     }
 
     public void databaseBtnClicked(ActionEvent event) {
