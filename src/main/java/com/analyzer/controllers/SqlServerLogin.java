@@ -74,9 +74,13 @@ public class SqlServerLogin implements Initializable {
         private final String portNo;
 
         public DBConnectionTask(String userName, String serverInstance, String portNo) {
-            this.userName = userName;
-            this.serverInstance = serverInstance;
-            this.portNo = portNo;
+//            this.userName = userName;
+//            this.serverInstance = serverInstance;
+//            this.portNo = portNo;
+
+            this.userName = "ryand";
+            this.serverInstance = "DESKTOP-0NS7D55\\SQLEXPRESS";
+            this.portNo = "65203";
         }
 
         @Override
@@ -142,6 +146,7 @@ public class SqlServerLogin implements Initializable {
                         nextBtn.setOnAction(event -> {
                             System.out.println("SQL Server Next steps!");
                             Utils.createStage("sql_server.fxml", "theme-1.css", this.serverInstance, connection, "SQL Server");
+                            Utils.createStage("settings.fxml", "theme-1.css", "Settings");
                         });
                     });
                 }

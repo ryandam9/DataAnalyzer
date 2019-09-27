@@ -8,8 +8,11 @@ java -Dlog4j.configurationFile=./location/log4j2-custom.xml
 
 
 # https://sookocheff.com/post/java/local-maven-repository/
-cd ~/Desktop/DataAnalyzer/lib
-mvn deploy:deploy-file -Durl=file://C:\Users\ryand\.m2\repository\com\dbutils\1.0-SNAPSHOT -Dfile=dbutils-1.0-SNAPSHOT.jar -DgroupId=com -DartifactId=dbutils -Dpackaging=jar -Dversion=1.0-SNAPSHOT
+
+1. cd ~/Desktop/DataAnalyzer/lib
+2. First Copy the local jar file into this folder.
+3. mvn deploy:deploy-file -Durl=file:/c/Users/ryand/.m2/repository/com/dbutils/1.0-SNAPSHOT -Dfile=dbutils-1.0-SNAPSHOT.jar -DgroupId=com -DartifactId=dbutils -Dpackaging=jar -Dversion=1.0-SNAPSHOT
+4. Add this line the pom.xml file
 
  <repositories>
         <repository>
@@ -19,6 +22,7 @@ mvn deploy:deploy-file -Durl=file://C:\Users\ryand\.m2\repository\com\dbutils\1.
         </repository>
     </repositories>
 	
+5. Add the Local jar file as the repo:
 
         <dependency>
             <groupId>com</groupId>

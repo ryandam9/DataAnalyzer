@@ -1,9 +1,10 @@
 package com.analyzer.controllers;
 
+import com.analyzer.classes.AppData;
 import com.analyzer.classes.RefreshQueryResultsTask;
+import com.dbutils.common.ColumnDetail;
 import com.dbutils.common.TableDetail;
 import com.dbutils.sqlserver.SqlServerMetadata;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import static com.analyzer.AppLogger.logger;
+import static com.analyzer.Utils.logStackTrace;
 
 public class DataBrowser implements Initializable {
     @FXML
@@ -65,37 +66,47 @@ public class DataBrowser implements Initializable {
         this.connection = connection;
         this.dbType = dbType;
 
-        Map<String, Map<String, List<TableDetail>>> tables;
+        Map<String, Map<String, Map<TableDetail, List<ColumnDetail>>>> tables;
 
-        if (dbType.equals("SQL Server")) {
-            tables = SqlServerMetadata.getAllTables(connection);
+        try {
+            if (dbType.equals("SQL Server")) {
+                tables = SqlServerMetadata.getAllTables(connection);
+                AppData.tables = tables;
+                List<String> databaseNames = new ArrayList(tables.keySet());
 
-            List<String> databaseNames = new ArrayList(tables.keySet());
-            logger.debug(databaseNames);
+                // Host name will be the Root of the tree.
+                TreeItem<String> rootNode = new TreeItem<String>(host);
+                rootNode.setExpanded(true);
 
-            // Host name will be the Root of the tree.
-            TreeItem<String> rootNode = new TreeItem<String>(host);
-            rootNode.setExpanded(true);
+                // Add Database names.
+                databaseNames.forEach((String db) -> {
+                    TreeItem<String> dbItem = new TreeItem<>(db);
+                    dbItem.setExpanded(true);
 
-            // Add Database names.
-            databaseNames.forEach((String db) -> {
-                TreeItem<String> dbItem = new TreeItem<>(db);
+                    for (String schema : tables.get(db).keySet()) {
+                        TreeItem<String> schemaItem = new TreeItem<>(schema);
+                        schemaItem.setExpanded(true);
 
-                for (String schema : tables.get(db).keySet()) {
-                    TreeItem<String> schemaItem = new TreeItem<>(schema);
+                        for (TableDetail table : tables.get(db).get(schema).keySet()) {
+                            TreeItem<String> tableItem = new TreeItem<>(table.getTable());
+                            schemaItem.getChildren().add(tableItem);
 
-                    for (TableDetail table : tables.get(db).get(schema)) {
-                        TreeItem<String> tableItem = new TreeItem<>(table.getTable());
-                        schemaItem.getChildren().add(tableItem);
+                            for (ColumnDetail columnDetail : tables.get(db).get(schema).get(table)) {
+                                TreeItem<String> columnItem = new TreeItem<>(columnDetail.getColumn());
+                                tableItem.getChildren().add(columnItem);
+                            }
+                        }
+
+                        dbItem.getChildren().add(schemaItem);
                     }
 
-                    dbItem.getChildren().add(schemaItem);
-                }
+                    rootNode.getChildren().add(dbItem);
+                });
 
-                rootNode.getChildren().add(dbItem);
-            });
-
-            objectExplorer.setRoot(rootNode);
+                objectExplorer.setRoot(rootNode);
+            }
+        } catch (Exception ex) {
+            logStackTrace(ex);
         }
     }
 

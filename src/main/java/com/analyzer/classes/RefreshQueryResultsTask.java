@@ -47,22 +47,6 @@ public class RefreshQueryResultsTask extends Task<Long> {
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 
             // Setup Header
-            // First create a Column for Record number
-            TableColumn c1 = new TableColumn("S.No");
-
-            c1.setCellValueFactory(
-                    new Callback<TableColumn.CellDataFeatures<ObservableList, String>, ObservableValue<String>>() {
-                        public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
-                            try {
-                                return new SimpleStringProperty(param.getValue().get(0).toString());
-                            } catch (Exception e) {
-                                return null;
-                            }
-                        }
-                    });
-
-            Platform.runLater(() -> resultsView.getColumns().addAll(c1));
-
             for (int i = 0; i < resultSet.getMetaData().getColumnCount(); i++) {
                 final int j = i;
                 TableColumn col = new TableColumn(resultSet.getMetaData().getColumnName(i + 1));
@@ -84,7 +68,6 @@ public class RefreshQueryResultsTask extends Task<Long> {
             while (resultSet.next()) {
                 ObservableList<String> row = FXCollections.observableArrayList();
                 recordCount++;
-                row.add(recordCount.toString());
 
                 for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
                     row.add(resultSet.getString(i));

@@ -88,7 +88,7 @@
 }
 
 .label-level-2-black {
-    -fx-font-size: 20px;
+    -fx-font-size: 15px;
     -fx-text-fill: -fx-dark-black;
     -fx-font-weight: bold;
 }
@@ -231,6 +231,16 @@
 }
 
 .query-results-window {
+   -fx-font-family: "consolas";
+   -fx-font-size: 10pt;
+}
+
+.tree-table-style {
+   -fx-font-family: "consolas";
+   -fx-font-size: 10pt;
+}
+
+.listview-style {
    -fx-font-family: "consolas";
    -fx-font-size: 10pt;
 }

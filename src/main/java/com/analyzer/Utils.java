@@ -29,7 +29,7 @@ public class Utils {
             dataBrowserController.setupParameters(host, connection, dbType);
 
             Stage stage = new Stage(StageStyle.DECORATED);
-            stage.setTitle("SQL Server Data Browser");
+            stage.setTitle(dbType + " Data Browser");
             stage.setScene(new Scene(parent));
             stage.setResizable(true);
             stage.getIcons().add(new Image(new File("resources/images/oracle.png").toURI().toURL().toString()));
@@ -38,6 +38,26 @@ public class Utils {
             e.printStackTrace();
         }
     }
+
+    public static void createStage(String fxmlFileName, String cssFileName, String title) {
+        try {
+            URL url = new File("resources/ui/" + fxmlFileName).toURI().toURL();
+            FXMLLoader loader = new FXMLLoader(url);
+            Parent parent = (Parent) loader.load();
+            String cssFile = new File("resources/css/" + cssFileName).toURI().toURL().toString();
+            parent.getStylesheets().add(cssFile);
+
+            Stage stage = new Stage(StageStyle.DECORATED);
+            stage.setTitle(title);
+            stage.setScene(new Scene(parent));
+            stage.setResizable(true);
+            stage.getIcons().add(new Image(new File("resources/images/oracle.png").toURI().toURL().toString()));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Log an Exception
