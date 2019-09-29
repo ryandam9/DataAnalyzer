@@ -6,10 +6,12 @@ import com.analyzer.ui.TaskTile;
 import com.dbutils.common.DBConnections;
 import com.dbutils.masking.DatascanResult;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -29,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import static com.analyzer.Utils.logStackTrace;
 
 public class DashboardController implements Initializable {
+
     @FXML
     private TextField tablesToBeScanned;
 
@@ -49,6 +52,9 @@ public class DashboardController implements Initializable {
 
     @FXML
     private ScrollPane dashboardArea;
+
+    @FXML
+    public Button showButton;
 
     private List<Connection> connections;
     private List<TaskTile> tiles = new ArrayList<>();
@@ -92,7 +98,13 @@ public class DashboardController implements Initializable {
         return tile;
     }
 
-    private void SubmitTasks() {
+    @FXML
+    private void showDashboard(ActionEvent event) {
+        showButton.setDisable(true);
+        submitTasks();
+    }
+
+    private void submitTasks() {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(AppData.getNoThreads());
         List<Future<DatascanResult>> resultList = new ArrayList<>();
         List<DatascanTask> tasks = new ArrayList<>();
@@ -100,15 +112,19 @@ public class DashboardController implements Initializable {
         int tableId = 0;
         int index = 0;
         int currentlyRunningTasks = 0;
+        int maxParallelTasks = AppData.getNoThreads();
+
+        if (AppData.getTablesTobeScanned().size() < AppData.getNoThreads())
+            maxParallelTasks = AppData.getTablesTobeScanned().size();
 
         List<Integer> taskStatus = new ArrayList<>();
-        for (int i = 0; i < AppData.getNoThreads(); i++)
-            taskStatus.set(i, 0);
+        for (int i = 0; i < maxParallelTasks; i++)
+            taskStatus.add(0);
 
         boolean allTablesScanned = false;
 
         while (! allTablesScanned) {
-            for (int i = 0; i < AppData.getNoThreads() && tableId < AppData.getTablesTobeScanned().size(); i++) {
+            for (int i = 0; i < maxParallelTasks && tableId < AppData.getTablesTobeScanned().size(); i++) {
                 if (taskStatus.get(i) == 0) {
                     DatascanTask task = new DatascanTask(tableId, connections.get(i),
                             AppData.getTablesTobeScanned().get(tableId).getTableDetail(),
@@ -156,5 +172,8 @@ public class DashboardController implements Initializable {
                     allTablesScanned = true;
             }
         }
+
+        executor.shutdown();
     }
+
 }
