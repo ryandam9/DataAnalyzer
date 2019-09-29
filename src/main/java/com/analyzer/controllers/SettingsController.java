@@ -57,6 +57,8 @@ public class SettingsController implements Initializable {
 
     @FXML
     private void performDatascan(ActionEvent event) {
+        AppData.setNoThreads(Integer.valueOf(noThreads.getText()));
+
         ObservableList<Integer> selectedIndices = objectsToScan.getSelectionModel().getSelectedIndices();
 
         // Identify the scope of Data scan at the table level - I need to know which DB -> Schema -> Table
@@ -109,7 +111,7 @@ public class SettingsController implements Initializable {
             }
         }
 
-        logger.debug(tablesToBeScanned);
+        AppData.setTablesTobeScanned(tablesToBeScanned);
         Utils.createStage("scan_dashboard.fxml", "theme-1.css", "Dashboard");
     }
 

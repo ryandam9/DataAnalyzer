@@ -13,6 +13,8 @@ public class AppData {
     private static String host;
     private static String db;
     private static String port;
+    private static List<TableWrapper> tablesTobeScanned;
+    private static int noThreads;
 
     public static Map<String, Map<String, Map<TableDetail, List<ColumnDetail>>>> getTables() {
         return tables;
@@ -60,5 +62,21 @@ public class AppData {
 
     public static void setPort(String port) {
         AppData.port = port;
+    }
+
+    public static List<TableWrapper> getTablesTobeScanned() {
+        return tablesTobeScanned;
+    }
+
+    public static void setTablesTobeScanned(List<TableWrapper> tablesTobeScanned) {
+        AppData.tablesTobeScanned = tablesTobeScanned;
+    }
+
+    public static int getNoThreads() {
+        return noThreads;
+    }
+
+    public static void setNoThreads(int noThreads) {
+        AppData.noThreads = noThreads;
     }
 }

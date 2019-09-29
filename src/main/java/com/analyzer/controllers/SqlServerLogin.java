@@ -1,6 +1,7 @@
 package com.analyzer.controllers;
 
 import com.analyzer.Utils;
+import com.analyzer.classes.AppData;
 import com.dbutils.common.DBConnections;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -116,6 +117,11 @@ public class SqlServerLogin implements Initializable {
         public void succeeded() {
             super.succeeded();
             connection = task.getValue();
+
+            // Store the credentials to be used when creating background threads to perform Data scan.
+            AppData.setUser(this.userName);
+            AppData.setHost(this.serverInstance);
+            AppData.setPort(this.portNo);
 
             // Verify connection
             ResultSet resultSet;

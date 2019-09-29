@@ -42,4 +42,32 @@ public class TaskTile extends VBox {
     public void setProgressIndicator(boolean visibility) {
         this.progressIndicator.setVisible(visibility);
     }
+
+    public Label getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(Label taskName) {
+        this.taskName = taskName;
+    }
+
+    public Label getTotalRecordsToScan() {
+        return totalRecordsToScan;
+    }
+
+    public void setTotalRecordsToScan(Label totalRecordsToScan) {
+        this.totalRecordsToScan = totalRecordsToScan;
+    }
+
+    public Label getProcessedSoFar() {
+        return processedSoFar;
+    }
+
+    public void setProcessedSoFar(Label processedSoFar) {
+        this.processedSoFar = processedSoFar;
+    }
+
+    public void setProgressIndicator(ProgressIndicator progressIndicator) {
+        this.progressIndicator = progressIndicator;
+    }
 }
