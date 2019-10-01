@@ -19,6 +19,6 @@ public class DatascanTask extends DataScanTask {
     }
 
     public void updateProgressCount() {
-        Platform.runLater(() -> tile.setProcessedSoFar(new Label("Hello")));
+        Platform.runLater(() -> tile.getProcessedSoFar().setText("Hello"));
     }
 }

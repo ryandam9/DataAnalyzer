@@ -10,17 +10,17 @@ public class TaskTile extends VBox {
     private Label processedSoFar;
     private ProgressIndicator progressIndicator;
 
-    public TaskTile(String taskName, Long totalRecordsToScan, Long processedSoFar) {
+    public TaskTile(String taskName, String totalRecordsToScan, String processedSoFar) {
         this.getStyleClass().add("tile-box");
 
         this.taskName = createLabel(taskName);
-        this.totalRecordsToScan = createLabel(totalRecordsToScan.toString());
-        this.processedSoFar = createLabel(processedSoFar.toString());
+        this.totalRecordsToScan = createLabel(totalRecordsToScan);
+        this.processedSoFar = createLabel(processedSoFar);
 
         // Progress Indicator
         progressIndicator = new ProgressIndicator();
         progressIndicator.getStyleClass().add("progress-indicator");
-        progressIndicator.setVisible(true);
+        progressIndicator.setVisible(false);
 
         getChildren().addAll(this.taskName, this.totalRecordsToScan, this.processedSoFar, this.progressIndicator);
     }
@@ -35,8 +35,8 @@ public class TaskTile extends VBox {
         return progressIndicator;
     }
 
-    public void setProcessedSoFar(Long processedSoFar) {
-        this.processedSoFar = createLabel(processedSoFar.toString());
+    public void setProcessedSoFar(String processedSoFar) {
+        this.processedSoFar = createLabel(processedSoFar);
     }
 
     public void setProgressIndicator(boolean visibility) {

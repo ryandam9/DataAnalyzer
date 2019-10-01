@@ -6,6 +6,7 @@ import com.analyzer.ui.TaskTile;
 import com.dbutils.common.DBConnections;
 import com.dbutils.masking.DatascanResult;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -93,7 +94,7 @@ public class DashboardController implements Initializable {
     }
 
     private TaskTile createTile() {
-        TaskTile tile = new TaskTile("", 0L, 0L);
+        TaskTile tile = new TaskTile("", "", "");
         tile.getStyleClass().add("tile-box");
         return tile;
     }
@@ -101,79 +102,121 @@ public class DashboardController implements Initializable {
     @FXML
     private void showDashboard(ActionEvent event) {
         showButton.setDisable(true);
-        submitTasks();
+        new Thread(new PerformDatascan()).start();
     }
 
-    private void submitTasks() {
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(AppData.getNoThreads());
-        List<Future<DatascanResult>> resultList = new ArrayList<>();
-        List<DatascanTask> tasks = new ArrayList<>();
+    /**
+     * This is the main Controller that submits background tasks to perform Data scan - One task per table.
+     * This is also a Background thread, which in turn uses Java Executor framework to submit tasks. Since this is a
+     * inner class, it has access to the UI elements that are defined in the outer class.
+     */
+    private class PerformDatascan extends Task<Integer> {
+        private ThreadPoolExecutor executor;
 
-        int tableId = 0;
-        int index = 0;
-        int currentlyRunningTasks = 0;
-        int maxParallelTasks = AppData.getNoThreads();
-
-        if (AppData.getTablesTobeScanned().size() < AppData.getNoThreads())
-            maxParallelTasks = AppData.getTablesTobeScanned().size();
-
-        List<Integer> taskStatus = new ArrayList<>();
-        for (int i = 0; i < maxParallelTasks; i++)
-            taskStatus.add(0);
-
-        boolean allTablesScanned = false;
-
-        while (! allTablesScanned) {
-            for (int i = 0; i < maxParallelTasks && tableId < AppData.getTablesTobeScanned().size(); i++) {
-                if (taskStatus.get(i) == 0) {
-                    DatascanTask task = new DatascanTask(tableId, connections.get(i),
-                            AppData.getTablesTobeScanned().get(tableId).getTableDetail(),
-                            AppData.getTablesTobeScanned().get(tableId).getColumnDetailList(),
-                            tiles.get(i));
-
-                    tasks.add(task);
-                    Future<DatascanResult> result = executor.submit(task);
-                    resultList.add(result);
-                    taskStatus.set(i, 1);
-                    tableId++;
-                }
-            }
-
-            // Wait for the task to be completed.
-            boolean breakTheLoop = false;
-            while (true) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(50);
-                } catch (InterruptedException ex) {
-                    logStackTrace(ex);
-                }
-                for (int i = 0; i < taskStatus.size(); i++) {
-                    Future<DatascanResult> result = resultList.get(i);
-                    if (result.isDone()) {
-                        taskStatus.set(i, 0);
-                        breakTheLoop = true;
-                        break;
-                    }
-                    tasks.get(i).updateProgressCount();
-                }
-
-                if (breakTheLoop)
-                    break;
-            }
-
-            if (tableId >= AppData.getTablesTobeScanned().size()) {
-                int count = 0;
-
-                for(int i = 0; i < taskStatus.size(); i++)
-                    if (taskStatus.get(i) != 0)
-                        count = 1;
-
-                if (count == 0)
-                    allTablesScanned = true;
-            }
+        private PerformDatascan() {
+            executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(AppData.getNoThreads());
         }
 
-        executor.shutdown();
-    }
+        @Override
+        protected Integer call() throws Exception {
+            List<Future<DatascanResult>> resultList = new ArrayList<>();    // holds results of Data scan
+            List<DatascanTask> tasks = new ArrayList<>();
 
+            int tableId = 0;
+            int index = 0;
+            int currentlyRunningTasks = 0;
+            int maxParallelTasks = AppData.getNoThreads();
+
+            // If the tables to be scanned is less than Max threads specified, update the max tasks to be the number
+            // of tables to be scanned.
+            if (AppData.getTablesTobeScanned().size() < AppData.getNoThreads())
+                maxParallelTasks = AppData.getTablesTobeScanned().size();
+
+            // This tracks the status of Tasks:
+            //      1 --> Task is running;
+            //      0 --> Task is completed, and a new one can be Submitted.
+            List<Integer> taskStatus = new ArrayList<>();
+            for (int i = 0; i < maxParallelTasks; i++)
+                taskStatus.add(0);
+
+            boolean allTablesScanned = false;
+
+            // Loop until all tables are scanned and all tasks are completed.
+            while (!allTablesScanned) {
+                for (int i = 0; i < maxParallelTasks && tableId < AppData.getTablesTobeScanned().size(); i++) {
+                    TaskTile t = tiles.get(i);
+
+                    if (taskStatus.get(i) == 0) {
+                        DatascanTask task = new DatascanTask(tableId, connections.get(i),
+                                AppData.getTablesTobeScanned().get(tableId).getTableDetail(),
+                                AppData.getTablesTobeScanned().get(tableId).getColumnDetailList(),
+                                t);
+
+                        String tableName = AppData.getTablesTobeScanned().get(tableId).getTableDetail().getTable();
+                        Platform.runLater(() -> {
+                            t.setProgressIndicator(true);
+                            t.getTaskName().setText(tableName);
+                            t.getTotalRecordsToScan().setText("999999999");
+                        });
+
+                        tasks.add(task);
+                        Future<DatascanResult> result = executor.submit(task);   // Submits a task via a Thread.
+                        resultList.add(result);
+                        taskStatus.set(i, 1);       // Change the status from 0 to 1.
+                        tableId++;
+                    }
+                }
+
+                // Wait until at least one task is completed.
+                boolean breakTheLoop = false;
+                while (true) {
+                    // Check if any of the already submitted tasks is completed !
+                    for (int i = 0; i < taskStatus.size(); i++) {
+                        Future<DatascanResult> result = resultList.get(i);
+                        if (result.isDone()) {
+                            taskStatus.set(i, 0);            // Task at this place holder is free.
+                            breakTheLoop = true;
+                            break;
+                        }
+                        tasks.get(i).updateProgressCount();
+
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(50);
+                        } catch (InterruptedException ex) {
+                            logStackTrace(ex);
+                        }
+                    }
+
+                    if (breakTheLoop)
+                        break;
+                }
+
+                // If this condition is satisfied, it means, all tables have submitted for processing. Ensure that
+                // any currently running tasks are completed.
+                if (tableId >= AppData.getTablesTobeScanned().size()) {
+                    int count = 0;
+
+                    for (int i = 0; i < taskStatus.size(); i++)
+                        if (taskStatus.get(i) != 0)
+                            count = 1;
+
+                    if (count == 0)
+                        allTablesScanned = true;
+                }
+            }
+
+            return 0;
+        }
+
+        @Override
+        public void succeeded() {
+            super.succeeded();
+            executor.shutdown();
+        }
+
+        @Override
+        protected void done() {
+            super.done();
+        }
+    }
 }
