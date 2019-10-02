@@ -13,7 +13,6 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
@@ -44,7 +43,7 @@ public class DashboardController implements Initializable {
     private TextField poolSize;
 
     @FXML
-    private Label activeCount;
+    private TextField activeCount;
 
     @FXML
     private TextField taskCount;
@@ -165,7 +164,7 @@ public class DashboardController implements Initializable {
 
                             Platform.runLater(() -> {
                                 t.setProgressIndicator(true);
-                                t.getTaskName().setText(tableName);
+                                t.getTaskName().setText("Table being analyzed\n:    " + tableName);
                                 t.getTotalRecordsToScan().setText("999999999");
                             });
 
@@ -204,6 +203,16 @@ public class DashboardController implements Initializable {
                         }
 
                         if (breakTheLoop) {
+                            // Update UI Elements
+                            int tablesDone = tableId;
+                            Platform.runLater(() -> {
+                                tablesToBeScanned.setText(String.valueOf(AppData.getTablesTobeScanned().size()));
+                                scannedSoFar.setText(String.valueOf(tablesDone));
+                                poolSize.setText(String.valueOf(executor.getPoolSize()));
+                                activeCount.setText(String.valueOf(executor.getActiveCount()));
+                                taskCount.setText(String.valueOf(executor.getTaskCount()));
+                                completedTasks.setText(String.valueOf(executor.getCompletedTaskCount()));
+                            });
                             break;
                         }
                     }
@@ -242,6 +251,10 @@ public class DashboardController implements Initializable {
         @Override
         protected void done() {
             super.done();
+
+            for (TaskTile t : tiles) {
+                t.getProgressIndicator().setVisible(false);
+            }
         }
     }
 }
