@@ -19,7 +19,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.TilePane;
 
-import javax.xml.crypto.Data;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -157,6 +156,7 @@ public class DashboardController implements Initializable {
                             String tableName = AppData.getTablesTobeScanned().get(tableId).getTableDetail().getTable();
                             logger.debug("Available position to submit task: " + i);
                             logger.debug("Table to be analyzed: " + tableName);
+                            logger.debug("Table Id to be submitted: " + tableId);
 
                             DatascanTask task = new DatascanTask(tableId, connections.get(i),
                                     AppData.getTablesTobeScanned().get(tableId).getTableDetail(),
@@ -178,21 +178,24 @@ public class DashboardController implements Initializable {
                         }
                     }
 
+                    logger.debug("Task Status table: " + taskStatus);
+
                     // Wait until at least one task is completed.
                     boolean breakTheLoop = false;
                     while (true) {
-                        // Check if any of the already submitted tasks is completed !
+                        // Check all the currently running tasks and check if they're completed !!
                         for (int i = 0; i < taskStatus.size(); i++) {
-                            Future<DatascanResult> result =  (Future<DatascanResult>) (currentlyRunningTasks[i]);
-                            logger.debug(i + " : " + result.isDone());
+                            Future<DatascanResult> result = (Future<DatascanResult>) (currentlyRunningTasks[i]);
 
                             if (result.isDone()) {
                                 taskStatus.set(i, 0);            // Task at this place holder is free.
                                 breakTheLoop = true;
-                                break;
                             }
                             tasks.get(i).updateProgressCount();
+                        }
 
+                        // If none of the currently running tasks is completed, wait for some time !
+                        if (breakTheLoop == false) {
                             try {
                                 TimeUnit.MILLISECONDS.sleep(50);
                             } catch (InterruptedException ex) {
@@ -200,8 +203,9 @@ public class DashboardController implements Initializable {
                             }
                         }
 
-                        if (breakTheLoop)
+                        if (breakTheLoop) {
                             break;
+                        }
                     }
 
                     // If this condition is satisfied, it means, all tables have submitted for processing. Ensure that
@@ -213,8 +217,12 @@ public class DashboardController implements Initializable {
                             if (taskStatus.get(i) != 0)
                                 count = 1;
 
-                        if (count == 0)
+                        if (count == 0) {
+                            logger.debug("Task Status table: " + taskStatus);
+                            logger.debug("All tasks completed. TableId: " + tableId + " >= " + AppData.getTablesTobeScanned().size());
+                            logger.debug("All tables have been scanned !!!");
                             allTablesScanned = true;
+                        }
                     }
                 }
 
