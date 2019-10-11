@@ -65,8 +65,8 @@ public class DashboardController implements Initializable {
         // Acquire Database connections - One per task
         connections = new ArrayList<>();
         try {
-            for (int i = 0; i < AppData.getNoThreads(); i++) {
-                Connection connection = DBConnections.getSqlServerConnection(AppData.getUser(), AppData.getHost(), AppData.getPort());
+            for (int i = 0; i < AppData.noThreads; i++) {
+                Connection connection = DBConnections.getSqlServerConnection(AppData.user, AppData.host, AppData.port);
                 connections.add(connection);
             }
         } catch (Exception ex) {
@@ -86,7 +86,7 @@ public class DashboardController implements Initializable {
         dashboardArea.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
         // Create a tile for each task
-        for (int i = 0; i < AppData.getNoThreads(); i++) {
+        for (int i = 0; i < AppData.noThreads; i++) {
             TaskTile tile = createTile();
             tilePane.getChildren().addAll(tile);
             tiles.add(tile);
@@ -114,7 +114,7 @@ public class DashboardController implements Initializable {
         private ThreadPoolExecutor executor;
 
         private PerformDatascan() {
-            executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(AppData.getNoThreads());
+            executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(AppData.noThreads);
         }
 
         @Override
@@ -124,12 +124,12 @@ public class DashboardController implements Initializable {
                 List<DatascanTask> tasks = new ArrayList<>();
 
                 int tableId = 0;
-                int maxParallelTasks = AppData.getNoThreads();
+                int maxParallelTasks = AppData.noThreads;
 
                 // If the tables to be scanned is less than Max threads specified, update the max tasks to be the number
                 // of tables to be scanned.
-                if (AppData.getTablesTobeScanned().size() < AppData.getNoThreads())
-                    maxParallelTasks = AppData.getTablesTobeScanned().size();
+                if (AppData.tablesTobeScanned.size() < AppData.noThreads)
+                    maxParallelTasks = AppData.tablesTobeScanned.size();
 
                 Future<?>[] currentlyRunningTasks;
                 currentlyRunningTasks = new Future<?>[maxParallelTasks];
@@ -143,23 +143,23 @@ public class DashboardController implements Initializable {
 
                 boolean allTablesScanned = false;
 
-                logger.debug("Number of tables to be scanned: " + AppData.getTablesTobeScanned().size());
+                logger.debug("Number of tables to be scanned: " + AppData.tablesTobeScanned.size());
                 logger.debug("Max parallel tasks: " + maxParallelTasks);
 
                 // Loop until all tables are scanned and all tasks are completed.
                 while (!allTablesScanned) {
-                    for (int i = 0; i < maxParallelTasks && tableId < AppData.getTablesTobeScanned().size(); i++) {
+                    for (int i = 0; i < maxParallelTasks && tableId < AppData.tablesTobeScanned.size(); i++) {
                         TaskTile t = tiles.get(i);
 
                         if (taskStatus.get(i) == 0) {
-                            String tableName = AppData.getTablesTobeScanned().get(tableId).getTableDetail().getTable();
+                            String tableName = AppData.tablesTobeScanned.get(tableId).getTableDetail().getTable();
                             logger.debug("Available position to submit task: " + i);
                             logger.debug("Table to be analyzed: " + tableName);
                             logger.debug("Table Id to be submitted: " + tableId);
 
                             DatascanTask task = new DatascanTask(tableId, connections.get(i),
-                                    AppData.getTablesTobeScanned().get(tableId).getTableDetail(),
-                                    AppData.getTablesTobeScanned().get(tableId).getColumnDetailList(),
+                                    AppData.tablesTobeScanned.get(tableId).getTableDetail(),
+                                    AppData.tablesTobeScanned.get(tableId).getColumnDetailList(),
                                     t);
 
                             Platform.runLater(() -> {
@@ -206,7 +206,7 @@ public class DashboardController implements Initializable {
                             // Update UI Elements
                             int tablesDone = tableId;
                             Platform.runLater(() -> {
-                                tablesToBeScanned.setText(String.valueOf(AppData.getTablesTobeScanned().size()));
+                                tablesToBeScanned.setText(String.valueOf(AppData.tablesTobeScanned.size()));
                                 scannedSoFar.setText(String.valueOf(tablesDone));
                                 poolSize.setText(String.valueOf(executor.getPoolSize()));
                                 activeCount.setText(String.valueOf(executor.getActiveCount()));
@@ -219,7 +219,7 @@ public class DashboardController implements Initializable {
 
                     // If this condition is satisfied, it means, all tables have submitted for processing. Ensure that
                     // any currently running tasks are completed.
-                    if (tableId >= AppData.getTablesTobeScanned().size()) {
+                    if (tableId >= AppData.tablesTobeScanned.size()) {
                         int count = 0;
 
                         for (int i = 0; i < taskStatus.size(); i++)
@@ -228,7 +228,7 @@ public class DashboardController implements Initializable {
 
                         if (count == 0) {
                             logger.debug("Task Status table: " + taskStatus);
-                            logger.debug("All tasks completed. TableId: " + tableId + " >= " + AppData.getTablesTobeScanned().size());
+                            logger.debug("All tasks completed. TableId: " + tableId + " >= " + AppData.tablesTobeScanned.size());
                             logger.debug("All tables have been scanned !!!");
                             allTablesScanned = true;
                         }

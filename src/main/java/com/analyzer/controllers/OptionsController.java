@@ -1,5 +1,6 @@
 package com.analyzer.controllers;
 
+import com.analyzer.classes.AppData;
 import com.analyzer.ui.TileButton;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -63,6 +64,7 @@ public class OptionsController implements Initializable {
 
         button.setOnAction(event -> {
             try {
+
                 if (!credentialsPane.getChildren().isEmpty()) {
                     credentialsPane.getChildren().remove(0);
                 }
@@ -70,24 +72,26 @@ public class OptionsController implements Initializable {
                 String dbType = ((TileButton) button).getDbType();
                 String fxml = "";
 
+                AppData.dbSelection = dbType;       // Store user selection @ Application level
+
                 switch (dbType) {
-                    case "Oracle":
+                    case AppData.ORACLE:
                         fxml = "oracle_login.fxml";
                         break;
 
-                    case "SQL Server":
+                    case AppData.SQL_SERVER:
                         fxml = "sql_server_login.fxml";
                         break;
 
-                    case "MySQL":
+                    case AppData.MySQL:
                         fxml = "mysql_login.fxml";
                         break;
 
-                    case "Dynamo DB":
+                    case AppData.DYNAMO_DB:
                         fxml = "dynamo_login.fxml";
                         break;
 
-                    case "DB2":
+                    case AppData.DB2:
                         fxml = "db2.fxml";
                         break;
                 }

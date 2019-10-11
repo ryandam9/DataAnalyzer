@@ -53,6 +53,10 @@ public class SqlServerLogin implements Initializable {
         progressIndicator.setPrefSize(100, 100);
         progressIndicator.setVisible(false);
         statusBox.getChildren().addAll(progressIndicator);
+
+        this.userId.setText("ryand");
+        this.dbServer.setText("DESKTOP-0NS7D55\\SQLEXPRESS");
+        this.port.setText("65203");
     }
 
     @FXML
@@ -75,13 +79,9 @@ public class SqlServerLogin implements Initializable {
         private final String portNo;
 
         public DBConnectionTask(String userName, String serverInstance, String portNo) {
-//            this.userName = userName;
-//            this.serverInstance = serverInstance;
-//            this.portNo = portNo;
-
-            this.userName = "ryand";
-            this.serverInstance = "DESKTOP-0NS7D55\\SQLEXPRESS";
-            this.portNo = "65203";
+            this.userName = userName;
+            this.serverInstance = serverInstance;
+            this.portNo = portNo;
         }
 
         @Override
@@ -117,11 +117,12 @@ public class SqlServerLogin implements Initializable {
         public void succeeded() {
             super.succeeded();
             connection = task.getValue();
+            AppData.initialConnection = connection;
 
             // Store the credentials to be used when creating background threads to perform Data scan.
-            AppData.setUser(this.userName);
-            AppData.setHost(this.serverInstance);
-            AppData.setPort(this.portNo);
+            AppData.user = this.userName;
+            AppData.host = this.serverInstance;
+            AppData.port = this.portNo;
 
             // Verify connection
             ResultSet resultSet;

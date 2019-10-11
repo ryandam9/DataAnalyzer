@@ -26,7 +26,6 @@ public class Utils {
             parent.getStylesheets().add(cssFile);
 
             DataBrowser dataBrowserController = loader.getController();
-            dataBrowserController.setupParameters(host, connection, dbType);
 
             Stage stage = new Stage(StageStyle.DECORATED);
             stage.setTitle(dbType + " Data Browser");

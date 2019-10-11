@@ -57,7 +57,7 @@ public class SettingsController implements Initializable {
 
     @FXML
     private void performDatascan(ActionEvent event) {
-        AppData.setNoThreads(Integer.valueOf(noThreads.getText()));
+        AppData.noThreads = (Integer.valueOf(noThreads.getText()));
 
         ObservableList<Integer> selectedIndices = objectsToScan.getSelectionModel().getSelectedIndices();
 
@@ -111,7 +111,7 @@ public class SettingsController implements Initializable {
             }
         }
 
-        AppData.setTablesTobeScanned(tablesToBeScanned);
+        AppData.tablesTobeScanned = tablesToBeScanned;
         Utils.createStage("scan_dashboard.fxml", "theme-1.css", "Dashboard");
     }
 

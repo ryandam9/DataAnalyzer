@@ -4,8 +4,22 @@ AdventureWorks
 65203
 SELECT * FROM INFORMATION_SCHEMA.tables
 
+
+database-1.cz8utnieoi7x.us-east-1.rds.amazonaws.com
+admin
+password
+1521
+ORCL
+
 java -Dlog4j.configurationFile=./location/log4j2-custom.xml
 
+Installing Oracle JDBC Jar file:
+--------------------------------
+https://www.mkyong.com/maven/how-to-add-oracle-jdbc-driver-in-your-maven-local-repository/
+mvn install:install-file -Dfile=/c/Users/ryand/Desktop/lib/ojdbc8.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=11.2 -Dpackaging=jar
+
+Use AdventureWorks2;
+SELECT * FROM SALES.currency;
 
 # https://sookocheff.com/post/java/local-maven-repository/
 
