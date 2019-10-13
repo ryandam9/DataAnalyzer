@@ -117,12 +117,12 @@ public class SqlServerLogin implements Initializable {
         public void succeeded() {
             super.succeeded();
             connection = task.getValue();
-            AppData.initialConnection = connection;
 
             // Store the credentials to be used when creating background threads to perform Data scan.
             AppData.user = this.userName;
             AppData.host = this.serverInstance;
             AppData.port = this.portNo;
+            AppData.initialConnection = connection;
 
             // Verify connection
             ResultSet resultSet;
@@ -152,8 +152,10 @@ public class SqlServerLogin implements Initializable {
 
                         nextBtn.setOnAction(event -> {
                             System.out.println("SQL Server Next steps!");
-                            Utils.createStage("sql_server.fxml", "theme-1.css", this.serverInstance, connection, "SQL Server");
-                            Utils.createStage("settings.fxml", "theme-1.css", "Settings");
+//                            Utils.createStage("sql_server.fxml", "theme-1.css", this.serverInstance, connection, "SQL Server");
+//                            Utils.createStage("settings.fxml", "theme-1.css", "Settings");
+                            Utils.createStage("tab_page.fxml", "main-window.css", "Data Browser");
+
                         });
                     });
                 }

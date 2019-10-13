@@ -48,8 +48,9 @@ public class Utils {
 
             Stage stage = new Stage(StageStyle.DECORATED);
             stage.setTitle(title);
-            stage.setScene(new Scene(parent));
+            stage.setScene(new Scene(parent, 1320, 1000));
             stage.setResizable(true);
+            stage.setFullScreen(true);
             stage.getIcons().add(new Image(new File("resources/images/oracle.png").toURI().toURL().toString()));
             stage.show();
         } catch (Exception e) {

@@ -4,23 +4,19 @@ import com.dbutils.common.ColumnDetail;
 import com.dbutils.common.TableDetail;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AppData {
     public static String dbSelection;
-
     public static String user;
     public static String password;
     public static String host;
     public static String db;
     public static String port;
     public static Connection initialConnection;
-
-
-    public static List<TableWrapper> tablesTobeScanned;
-    public static int noThreads;
 
     // Constants
     public static final String ORACLE = "Oracle";
@@ -30,4 +26,6 @@ public class AppData {
     public static final String DB2 = "DB2";
 
     public static Map<String, Map<String, Map<TableDetail, List<ColumnDetail>>>> tables = new HashMap<>();
+    public static List<TableWrapper> tablesTobeScanned = new ArrayList<>();
+    public static int noThreads = 10;
 }

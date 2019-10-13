@@ -28,7 +28,7 @@
 }
 
 .root{
-    -fx-background-color: white;
+    -fx-background-color: -fx-light-white-gray;
     -fx-text-fill: -fx-dark-gray;
 }
 
