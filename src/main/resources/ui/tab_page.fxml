@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="823.0" prefWidth="1115.0" stylesheets="@../css/main-window.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.analyzer.controllers.MainWindowController">
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" prefHeight="52.0" prefWidth="1115.0" spacing="10.0" style="-fx-background-color: #373741;" BorderPane.alignment="CENTER">
+            <children>
+                <Button fx:id="datascanBtn" mnemonicParsing="false" onAction="#performDataScan" styleClass="click-button" text="Perform Data Scan" />
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+        </HBox>
+    </bottom>
+    <center>
+        <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+            <tabs>
+                <Tab text="Settings">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <GridPane layoutX="29.0" layoutY="166.0" prefHeight="702.4" prefWidth="1115.2" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="NEVER" />
+                                        <ColumnConstraints fx:id="gridColumn1" hgrow="ALWAYS" percentWidth="20.0" />
+                                        <ColumnConstraints fx:id="gridColumn2" hgrow="ALWAYS" />
+                                        <ColumnConstraints fx:id="gridColumn3" hgrow="ALWAYS" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints vgrow="ALWAYS" />
+                                    </rowConstraints>
+                                    <children>
+                                        <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="300.0" spacing="10.0" GridPane.hgrow="NEVER">
+                                            <children>
+                                                <VBox prefHeight="141.0" prefWidth="280.0" spacing="10.0">
+                                                    <children>
+                                                        <Label styleClass="label-3" text="Datascan Scope">
+                                                            <font>
+                                                                <Font size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <RadioButton fx:id="databaseBtn" mnemonicParsing="false" onAction="#databaseBtnClicked" selected="true" text="Database">
+                                                            <toggleGroup>
+                                                                <ToggleGroup fx:id="scope" />
+                                                            </toggleGroup>
+                                                        </RadioButton>
+                                                        <RadioButton fx:id="schemaBtn" layoutX="20.0" layoutY="72.0" mnemonicParsing="false" onAction="#schemaBtnClicked" text="Schema" toggleGroup="$scope" />
+                                                        <RadioButton fx:id="tableBtn" layoutX="20.0" layoutY="113.0" mnemonicParsing="false" onAction="#tableBtnClicked" text="Table" toggleGroup="$scope" />
+                                                    </children>
+                                                    <padding>
+                                                        <Insets left="20.0" right="20.0" top="10.0" />
+                                                    </padding>
+                                                </VBox>
+                                                <Separator prefHeight="2.0" prefWidth="288.0" />
+                                                <VBox spacing="10.0">
+                                                    <children>
+                                                        <Label styleClass="label-3" text="Number of Threads" textFill="#373741">
+                                                            <font>
+                                                                <Font name="System Bold" size="13.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <TextField fx:id="prefParallelTaskCount" prefHeight="40.0" prefWidth="100.0" promptText="10" />
+                                                    </children>
+                                                    <padding>
+                                                        <Insets bottom="10.0" left="20.0" right="20.0" />
+                                                    </padding>
+                                                </VBox>
+                                                <Separator prefWidth="200.0" />
+                                                <VBox spacing="10.0">
+                                                    <children>
+                                                        <Label styleClass="label-3" text="Records to Scan      " textFill="#373741">
+                                                            <font>
+                                                                <Font name="System Bold" size="20.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <TextField fx:id="prefRecordsToScan" prefHeight="40.0" prefWidth="100.0" promptText="100000" />
+                                                    </children>
+                                                    <padding>
+                                                        <Insets bottom="10.0" left="20.0" right="20.0" />
+                                                    </padding>
+                                                </VBox>
+                                                <Separator prefWidth="200.0" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="10.0" top="10.0" />
+                                            </padding>
+                                        </VBox>
+                                        <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.columnIndex="1">
+                                            <items>
+                                                <AnchorPane fx:id="databasesAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                                    <children>
+                                                        <VBox fx:id="databasesVBox" layoutX="61.0" layoutY="127.0" maxHeight="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                            <children>
+                                                                <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="50.0" prefWidth="200.0" styleClass="heading-1">
+                                                                    <children>
+                                                                        <Label styleClass="hbox-label" text="Databases" />
+                                                                    </children>
+                                                                    <padding>
+                                                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                                    </padding>
+                                                                </HBox>
+                                                            </children>
+                                                        </VBox>
+                                                    </children>
+                                                </AnchorPane>
+                                                <AnchorPane fx:id="schemasAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                                    <children>
+                                                        <VBox fx:id="schemasVBox" maxHeight="1.7976931348623157E308" prefHeight="348.0" prefWidth="221.6" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                            <children>
+                                                                <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="50.0" prefWidth="200.0" styleClass="heading-1">
+                                                                    <children>
+                                                                        <Label styleClass="hbox-label" text="Schemas" />
+                                                                    </children>
+                                                                    <padding>
+                                                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                                    </padding>
+                                                                </HBox>
+                                                            </children>
+                                                        </VBox>
+                                                    </children>
+                                                </AnchorPane>
+                                            </items>
+                                        </SplitPane>
+                                        <VBox fx:id="tablesVBox" GridPane.columnIndex="2">
+                                            <children>
+                                                <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="52.0" prefWidth="296.0" styleClass="heading-1">
+                                                    <padding>
+                                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                    </padding>
+                                                    <children>
+                                                        <Label styleClass="hbox-label" text="Tables" />
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="10.0" GridPane.columnIndex="3">
+                                            <children>
+                                                <Label fx:id="statusMessage" text="" wrapText="true" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                            </padding>
+                                        </VBox>
+                                    </children>
+                                </GridPane>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab text="Dashboard">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    </content>
+                </Tab>
+                <Tab text="Report">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>

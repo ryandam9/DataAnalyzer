@@ -1,0 +1,121 @@
+* {
+    -fx-lib-ass-black : #2A2E37;
+    -fx-lib-ass-secondary : #FFFF8D;
+    -fx-yellow: #FAAB1A;
+    -fx-light-gray: #B4C1CC;
+    -fx-dark-gray: #344955;
+    -fx-primary-text: WHITE;
+    -fx-black: #17262A;
+    -fx-light-pink: #FFF0E8;
+    -fx-dark-pink: #FEDBD0;
+    -fx-light-black: #424250;
+    -fx-dark-black: #373741;
+    -fx-light-green: #1EB980;
+    -fx-dark-green: #005D57;
+    -fx-green: #129622;
+    -fx-blue: #5264AE;
+    -fx-dark-blue: #2979FF;
+    -fx-pure-black: #000000;
+    -fx-google-blue: #065FD4;
+    -fx-light-white-gray: #F2F2F2;
+    -fx-dark-white-gray: #D9D9D9;
+    -fx-dark-green: #138496;
+    -fx-light-green: #D4EDDA;
+    -fx-light-white: #F0FFFF;
+    -fx-soumya-purple: #7D2996;
+    -fx-lib-primarytext : #B2B2B2;
+    -fx-lib-primary : #2A2E37;
+}
+
+.root{
+    -fx-background-color: white;
+    -fx-text-fill: -fx-dark-gray;
+}
+
+/*TabPane styling*/
+/*
+.tab-header-background {
+    -fx-background-color: -fx-lib-ass-black;
+}
+
+.tab {
+    -fx-background-color: -fx-lib-ass-black;
+    -fx-pref-width : 150;
+    -fx-pref-height : 40;
+}
+*/
+
+.tab-pane:top *.tab-header-area {
+    -fx-background-insets: 0, 0 0 1 0;
+ /* -fx-padding: 0.416667em 0.166667em 0.0em 0.833em; /* 5 2 0 10 */
+    -fx-padding: 0.416667em 0.166667em 0.0em 0.0em; /* overridden as 5 2 0 0 */
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-opacity: 0;
+}
+
+.tab-pane
+{
+    -fx-tab-min-width:90px;
+}
+
+.tab{
+    -fx-background-insets: 0 1 0 1,0,0;
+}
+.tab-pane .tab
+{
+    -fx-background-color: #e6e6e6;
+
+}
+
+.tab-pane .tab:selected
+{
+    -fx-background-color: #3c3c3c;
+}
+
+.tab .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #828282;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.tab:selected .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #96b946;
+}
+
+
+.label-3 {
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-google-blue;
+    -fx-font-weight: bold;
+}
+
+.hbox-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #96b946;
+    -fx-font-weight: bold;
+}
+
+.heading-1 {
+    -fx-background-color: #3c3c3c;
+}
+
+.click-button {
+    -fx-padding: 0.7em 0.57em;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-background-color: -fx-green;
+    -fx-pref-width: 150;
+    -fx-text-fill: white;
+    -fx-min-width: 150;
+    -fx-font-smoothing-type: gray;
+    -fx-border-radius: 10 10 0 0;
+}
+
+.click-button: hover {
+    -fx-background-color: white;
+    -fx-text-fill: -fx-green;
+}

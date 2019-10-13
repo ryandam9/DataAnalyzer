@@ -91,7 +91,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>./resources/lib/</classpathPrefix>
-                            <mainClass>com.analyzer.Main</mainClass>
+                            <mainClass>com.analyzer.loaders.MainWindowLoader</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

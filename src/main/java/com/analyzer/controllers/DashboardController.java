@@ -171,7 +171,7 @@ public class DashboardController implements Initializable {
                             tasks.add(task);
                             Future<DatascanResult> result = executor.submit(task);   // Submits a task via a Thread.
                             resultList.add(result);                                  // Holds results of all Submitted tasks. Need this to generate a final report.
-                            currentlyRunningTasks[i] = result;                    // Holds only the currently running tasks. need this to monitor their progress.
+                            currentlyRunningTasks[i] = result;                       // Holds only the currently running tasks. need this to monitor their progress.
                             taskStatus.set(i, 1);       // Change the status from 0 to 1.
                             tableId++;
                         }
