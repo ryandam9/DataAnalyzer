@@ -1,23 +1,32 @@
 package com.analyzer.controllers;
 
 import com.analyzer.classes.AppData;
+import com.dbutils.common.ColumnDetail;
 import com.dbutils.common.TableDetail;
 import com.dbutils.oracle.OracleMetadata;
 import com.dbutils.sqlserver.SqlServerMetadata;
+import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.util.*;
+
+import static com.analyzer.AppLogger.logger;
 
 public class MainWindowController implements Initializable {
     @FXML
@@ -66,74 +75,104 @@ public class MainWindowController implements Initializable {
     private ColumnConstraints gridColumn3;
 
     ListProperty<String> databasesListProperty = new SimpleListProperty<>();
-    ListView<String> databasesListView = new ListView<>();
+    ListView<String> databasesListView;
 
     ListProperty<String> schemasListProperty = new SimpleListProperty<>();
+    ListView<String> schemasListView;
+
     ListProperty<String> tablesListProperty = new SimpleListProperty<>();
+    ListView<String> tablesListView;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        // This step gathers the Database and all the schemas in the Databases and stores in Application level map.
         fetchDBMetadata();
 
-        ListView<String> databasesListView = new ListView<>();
+        // Create a list view to show databases and bind its Items property with a List Property.
+        databasesListView = new ListView<>();
         databasesListView.itemsProperty().bind(databasesListProperty);
         databasesListView.prefHeightProperty().bind(databasesVBox.heightProperty());
-        databasesListView.setStyle("-fx-background-insets: 0 ;");            // Remove Listview border.
         databasesVBox.getChildren().add(databasesListView);
+        showDatabases();
+
+        // Only one database can be selected for scanning at a time
+        databasesListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+        // When a database is clicked, its Schemas should be rendered in the Schema window.
+        databasesListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                String selectedItem = databasesListView.getSelectionModel().getSelectedItem();
+                AppData.userSelectionDB = selectedItem;
+                AppData.userSelectionSchema = null;
+                AppData.userSelectionTables.removeAll(AppData.userSelectionTables);
+
+                // When a Database selection is made, show schemas only. Clear any previously shown tables !
+                tablesListProperty.clear();
+                showSchemas();
+            }
+        });
 
         // Schemas
-        ListView<String> schemasListView = new ListView<>();
+        schemasListView = new ListView<>();
+        schemasListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         schemasListView.itemsProperty().bind(schemasListProperty);
         schemasListView.prefHeightProperty().bind(schemasVBox.heightProperty());
-        schemasListView.setStyle("-fx-background-insets: 0 ;");            // Remove Listview border.
         schemasVBox.getChildren().add(schemasListView);
 
+        // When a schema is clicked, its tables should be rendered in the tables window.
+        schemasListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                String selectedItem = schemasListView.getSelectionModel().getSelectedItem();
+                AppData.userSelectionSchema = selectedItem;
+                AppData.userSelectionTables.removeAll(AppData.userSelectionTables);
+                showTables();
+            }
+        });
+
         // Tables
-        ListView<String> tablesListView = new ListView<>();
+        tablesListView = new ListView<>();
+        tablesListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         tablesListView.itemsProperty().bind(tablesListProperty);
         tablesListView.prefHeightProperty().bind(tablesVBox.heightProperty());
-        tablesListView.setStyle("-fx-background-insets: 0 ;");            // Remove Listview border.
         tablesVBox.getChildren().add(tablesListView);
-
-        databaseBtnClicked(new ActionEvent());
     }
 
-    @FXML
-    private void databaseBtnClicked(ActionEvent event) {
-        List<String> databases = new ArrayList<>(AppData.tables.keySet());
+    private void showDatabases() {
+        List<String> databases = new ArrayList<>(AppData.tables.keySet());  // Get list of databases
+        Collections.sort(databases, (o1, o2) -> o1.toLowerCase().compareTo(o2.toLowerCase()));
+
         ObservableList<String> listData = FXCollections.observableArrayList();
         databasesListProperty.clear();
         databases.forEach((db) -> listData.add(db));
         databasesListProperty.set(listData);
     }
 
-    public void schemaBtnClicked(ActionEvent event) {
+    private void showSchemas() {
+        String db = AppData.userSelectionDB;
         ObservableList<String> listData = FXCollections.observableArrayList();
 
-        for (String db : AppData.tables.keySet()) {
-            for (String schema : AppData.tables.get(db).keySet()) {
-                listData.add(db + "." + schema);
-            }
+        for (String schema : AppData.tables.get(db).keySet()) {
+            listData.add(schema);
         }
+
+        Collections.sort(listData, (o1, o2) -> o1.toLowerCase().compareTo(o2.toLowerCase()));
 
         schemasListProperty.clear();
         schemasListProperty.set(listData);
     }
 
-    public void tableBtnClicked(ActionEvent event) {
-        List<String> tables = new ArrayList<>();
+    private void showTables() {
+        String db = AppData.userSelectionDB;
+        String schema = AppData.userSelectionSchema;
 
-        for (String db : AppData.tables.keySet()) {
-            for (String schema : AppData.tables.get(db).keySet()) {
-                for (TableDetail tableDetail : AppData.tables.get(db).get(schema).keySet()) {
-                    tables.add(db + "." + schema + "." + tableDetail.getTable());
-                }
-            }
+        if (AppData.tables.get(db).get(schema).keySet().size() == 0) {
+            Thread t = new Thread(new FetchTablesListInASchemaTask());
+            t.start();
         }
-    }
 
-    @FXML
-    private void performDataScan(ActionEvent event) {
+        sortAndShowTables();
     }
 
     /**
@@ -200,6 +239,130 @@ public class MainWindowController implements Initializable {
                     }
                 }
                 break;
+        }
+    }
+
+    @FXML
+    private void databaseBtnClicked(ActionEvent event) {
+    }
+
+    @FXML
+    private void schemaBtnClicked(ActionEvent event) {
+    }
+
+    @FXML
+    private void tableBtnClicked(ActionEvent event) {
+    }
+
+    /**
+     * This class fetches tables that exist in a Selected DB & Schema. Given that there could be thousands of tables
+     * exist in a schema, It is implemented as JavaFX Task, so that, its body is executed in the background.
+     */
+    class FetchTablesListInASchemaTask extends Task<Integer> {
+        @Override
+        protected Integer call() throws Exception {
+//            Platform.runLater(() -> progressIndicator.setVisible(true));
+            Map<TableDetail, List<ColumnDetail>> tablesMap = new HashMap<>();
+            int tableCount = 0;
+
+            String db = AppData.userSelectionDB;
+            String schema = AppData.userSelectionSchema;
+
+            switch (AppData.dbSelection) {
+                case AppData.ORACLE:
+                    tablesMap = OracleMetadata.getAllTables(AppData.initialConnection, db, schema);
+                    break;
+
+                case AppData.SQL_SERVER:
+                    tablesMap = SqlServerMetadata.getAllTables(AppData.initialConnection, db, schema);
+                    break;
+            }
+
+            // Update the App level Dictionary
+            for (TableDetail tableDetail : tablesMap.keySet()) {
+                AppData.tables.get(db).get(schema).put(tableDetail, tablesMap.get(tableDetail));
+                logger.debug(AppData.tables.get(db).get(schema).get(tableDetail));
+                tableCount++;
+            }
+
+            sortAndShowTables();
+
+//            Platform.runLater(() -> parent.getChildren().addAll(tablesInThisSchema));
+            return tableCount;
+        }
+
+        @Override
+        protected void done() {
+            super.done();
+//            Platform.runLater(() -> progressIndicator.setVisible(false));
+        }
+    }
+
+    private void sortAndShowTables() {
+        String db = AppData.userSelectionDB;
+        String schema = AppData.userSelectionSchema;
+
+        // To Sort table names
+        List<TableDetail> unorderedTables = new ArrayList<>(AppData.tables.get(db).get(schema).keySet());
+        Collections.sort(unorderedTables, new Comparator<TableDetail>() {
+            @Override
+            public int compare(TableDetail o1, TableDetail o2) {
+                return o1.getTable().toLowerCase().compareTo(o2.getTable().toLowerCase());
+            }
+        });
+
+        ObservableList<String> listData = FXCollections.observableArrayList();
+        unorderedTables.forEach(tableDetail -> listData.add(tableDetail.getTable()));
+
+        Platform.runLater(() -> {
+            tablesListProperty.clear();
+            tablesListProperty.set(listData);
+        });
+    }
+
+    @FXML
+    private void performDataScan(ActionEvent event) {
+        if (databaseBtn.isSelected()) {
+            if (AppData.userSelectionDB == null) {
+                statusMessage.setText("Select a Database to perform Data scan @ DB level !");
+                return;
+            } else {
+                statusMessage.setText("Datascan @ DB Level: " + AppData.userSelectionDB);
+            }
+
+        }
+
+        if (schemaBtn.isSelected()) {
+            if (AppData.userSelectionSchema == null) {
+                statusMessage.setText("Select a schema in DB: " + AppData.userSelectionDB + " to perform Data scan @ Schema level !");
+                return;
+            } else {
+                statusMessage.setText("Datascan @ Schema Level: " + AppData.userSelectionDB + "." + AppData.userSelectionSchema);
+            }
+        }
+
+        if (tableBtn.isSelected()) {
+            if (AppData.userSelectionDB == null || AppData.userSelectionSchema == null) {
+                statusMessage.setText("Select a DB and a Schema first !");
+                return;
+            }
+
+            ObservableList<Integer> selectedIndices = tablesListView.getSelectionModel().getSelectedIndices();
+
+            if (selectedIndices.size() == 0) {
+                statusMessage.setText("Select one/more tables in DB: " + AppData.userSelectionDB +
+                        " Schema: " + AppData.userSelectionSchema + " to perform Data scan @ table level !");
+                return;
+            } else {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Datascan @ Table level: " + AppData.userSelectionDB + "." + AppData.userSelectionSchema);
+
+                for (Integer index : selectedIndices) {
+                    msg.append("\n").append("\t" + tablesListProperty.get(index));
+                }
+
+                statusMessage.setText(msg.toString());
+            }
         }
     }
 }

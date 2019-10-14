@@ -28,4 +28,8 @@ public class AppData {
     public static Map<String, Map<String, Map<TableDetail, List<ColumnDetail>>>> tables = new HashMap<>();
     public static List<TableWrapper> tablesTobeScanned = new ArrayList<>();
     public static int noThreads = 10;
+
+    public static String userSelectionDB;
+    public static String userSelectionSchema;
+    public static List<String> userSelectionTables = new ArrayList<>();
 }
