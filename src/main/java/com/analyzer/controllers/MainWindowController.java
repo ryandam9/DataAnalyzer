@@ -1,6 +1,7 @@
 package com.analyzer.controllers;
 
 import com.analyzer.classes.AppData;
+import com.analyzer.classes.TableWrapper;
 import com.dbutils.common.ColumnDetail;
 import com.dbutils.common.TableDetail;
 import com.dbutils.oracle.OracleMetadata;
@@ -8,8 +9,6 @@ import com.dbutils.sqlserver.SqlServerMetadata;
 import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -167,12 +166,14 @@ public class MainWindowController implements Initializable {
         String db = AppData.userSelectionDB;
         String schema = AppData.userSelectionSchema;
 
+        // If the tables don't already exist in the map, run the background thread to fetch the tables.
         if (AppData.tables.get(db).get(schema).keySet().size() == 0) {
-            Thread t = new Thread(new FetchTablesListInASchemaTask());
+            Thread t = new Thread(new FetchTablesListInASchemaTask(db, schema, true));
             t.start();
+        } else {
+            // If the table list is already gathered, just show them.
+            sortAndShowTables(db, schema);
         }
-
-        sortAndShowTables();
     }
 
     /**
@@ -259,33 +260,43 @@ public class MainWindowController implements Initializable {
      * exist in a schema, It is implemented as JavaFX Task, so that, its body is executed in the background.
      */
     class FetchTablesListInASchemaTask extends Task<Integer> {
+        private String db;
+        private String schema;
+        private boolean showTables;
+
+        public FetchTablesListInASchemaTask(String db, String schema, boolean showTables) {
+            this.db = db;
+            this.schema = schema;
+            this.showTables = showTables;
+        }
+
         @Override
         protected Integer call() throws Exception {
 //            Platform.runLater(() -> progressIndicator.setVisible(true));
             Map<TableDetail, List<ColumnDetail>> tablesMap = new HashMap<>();
             int tableCount = 0;
 
-            String db = AppData.userSelectionDB;
-            String schema = AppData.userSelectionSchema;
-
             switch (AppData.dbSelection) {
                 case AppData.ORACLE:
-                    tablesMap = OracleMetadata.getAllTables(AppData.initialConnection, db, schema);
+                    tablesMap = OracleMetadata.getAllTables(AppData.initialConnection, this.db, this.schema);
                     break;
 
                 case AppData.SQL_SERVER:
-                    tablesMap = SqlServerMetadata.getAllTables(AppData.initialConnection, db, schema);
+                    tablesMap = SqlServerMetadata.getAllTables(AppData.initialConnection, this.db, this.schema);
                     break;
             }
 
             // Update the App level Dictionary
-            for (TableDetail tableDetail : tablesMap.keySet()) {
-                AppData.tables.get(db).get(schema).put(tableDetail, tablesMap.get(tableDetail));
-                logger.debug(AppData.tables.get(db).get(schema).get(tableDetail));
-                tableCount++;
-            }
+            synchronized (this) {
+                for (TableDetail tableDetail : tablesMap.keySet()) {
+                    AppData.tables.get(this.db).get(this.schema).put(tableDetail, tablesMap.get(tableDetail));
+                    logger.debug(AppData.tables.get(this.db).get(this.schema).get(tableDetail));
+                    tableCount++;
+                }
 
-            sortAndShowTables();
+                if (showTables)
+                    sortAndShowTables(this.db, this.schema);
+            }
 
 //            Platform.runLater(() -> parent.getChildren().addAll(tablesInThisSchema));
             return tableCount;
@@ -298,12 +309,17 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    private void sortAndShowTables() {
-        String db = AppData.userSelectionDB;
-        String schema = AppData.userSelectionSchema;
-
-        // To Sort table names
+    /**
+     * Shows the tables that exist in a given database and schema
+     *
+     * @param db
+     * @param schema
+     */
+    private void sortAndShowTables(String db, String schema) {
+        // Get the table list from app level map
         List<TableDetail> unorderedTables = new ArrayList<>(AppData.tables.get(db).get(schema).keySet());
+
+        // Sort the tables on table name
         Collections.sort(unorderedTables, new Comparator<TableDetail>() {
             @Override
             public int compare(TableDetail o1, TableDetail o2) {
@@ -311,15 +327,33 @@ public class MainWindowController implements Initializable {
             }
         });
 
+        // Type of table entry is "TableDetail". Just get the table name as a String
         ObservableList<String> listData = FXCollections.observableArrayList();
         unorderedTables.forEach(tableDetail -> listData.add(tableDetail.getTable()));
 
+        // Show on UI
         Platform.runLater(() -> {
             tablesListProperty.clear();
             tablesListProperty.set(listData);
         });
     }
 
+    /**
+     * This method is called when "Perform Data Scan" button is clicked. It tries to find the scope of Data scan. The three
+     * options are:
+     * a. Database level
+     * b. Schema level
+     * c. Table level
+     * <p>
+     * It identifies the scope by reading the radio buttons and validates the user selections done so far and shows
+     * warning messages accordingly (For Instance, if the "Database" radio button is checked and no database is
+     * selected, Data scan cannot be done !!).
+     * <p>
+     * Based on the selection, it finally creates the tables to be scanned list, that includes Database + Schema + Table + Column
+     * details.
+     *
+     * @param event
+     */
     @FXML
     private void performDataScan(ActionEvent event) {
         if (databaseBtn.isSelected()) {
@@ -328,8 +362,23 @@ public class MainWindowController implements Initializable {
                 return;
             } else {
                 statusMessage.setText("Datascan @ DB Level: " + AppData.userSelectionDB);
-            }
 
+                // Ensure that we have table list of all schemas in this database. otherwise, fetch them. This is going
+                // to submit a number of threads.
+                for (String schema : AppData.tables.get(AppData.userSelectionDB).keySet()) {
+                    if (AppData.tables.get(AppData.userSelectionDB).get(schema).keySet().size() == 0) {
+                        Thread t = new Thread(new FetchTablesListInASchemaTask(AppData.userSelectionDB, schema, false));
+                        t.start();
+                    }
+                }
+
+                for (String schema : AppData.tables.get(AppData.userSelectionDB).keySet()) {
+                    for (TableDetail tableDetail : AppData.tables.get(AppData.userSelectionDB).get(schema).keySet()) {
+                        TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(AppData.userSelectionDB).get(schema).get(tableDetail));
+                        AppData.tablesTobeScanned.add(tableWrapper);
+                    }
+                }
+            }
         }
 
         if (schemaBtn.isSelected()) {
@@ -338,6 +387,10 @@ public class MainWindowController implements Initializable {
                 return;
             } else {
                 statusMessage.setText("Datascan @ Schema Level: " + AppData.userSelectionDB + "." + AppData.userSelectionSchema);
+                for (TableDetail tableDetail : AppData.tables.get(AppData.userSelectionDB).get(AppData.userSelectionSchema).keySet()) {
+                    TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(AppData.userSelectionDB).get(AppData.userSelectionSchema).get(tableDetail));
+                    AppData.tablesTobeScanned.add(tableWrapper);
+                }
             }
         }
 
@@ -359,9 +412,14 @@ public class MainWindowController implements Initializable {
 
                 for (Integer index : selectedIndices) {
                     msg.append("\n").append("\t" + tablesListProperty.get(index));
+
+                    TableDetail tableDetail = new TableDetail(AppData.userSelectionDB, AppData.userSelectionSchema, tablesListProperty.get(index), "BASE TABLE");
+                    TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(AppData.userSelectionDB).get(AppData.userSelectionSchema).get(tableDetail));
+                    AppData.tablesTobeScanned.add(tableWrapper);
                 }
 
                 statusMessage.setText(msg.toString());
+
             }
         }
     }
