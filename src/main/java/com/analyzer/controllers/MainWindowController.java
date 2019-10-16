@@ -18,9 +18,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 
 import java.net.URL;
 import java.util.*;
@@ -28,9 +26,6 @@ import java.util.*;
 import static com.analyzer.AppLogger.logger;
 
 public class MainWindowController implements Initializable {
-    @FXML
-    private Button datascanBtn;
-
     @FXML
     private RadioButton databaseBtn;
 
@@ -62,7 +57,7 @@ public class MainWindowController implements Initializable {
     private VBox tablesVBox;
 
     @FXML
-    private Label statusMessage;
+    private VBox scopeBox;
 
     @FXML
     private ColumnConstraints gridColumn1;
@@ -73,6 +68,24 @@ public class MainWindowController implements Initializable {
     @FXML
     private ColumnConstraints gridColumn3;
 
+    @FXML
+    private HBox statusBar;                 // Entire Status Bar, that holds Msg bar and Button bar.
+
+    @FXML
+    private HBox msgBar;
+
+    @FXML
+    private Label message;
+
+    @FXML
+    private HBox buttonBar;
+
+    @FXML
+    private Button showScopeBtn;
+
+    @FXML
+    private Button datascanBtn;
+
     ListProperty<String> databasesListProperty = new SimpleListProperty<>();
     ListView<String> databasesListView;
 
@@ -82,8 +95,25 @@ public class MainWindowController implements Initializable {
     ListProperty<String> tablesListProperty = new SimpleListProperty<>();
     ListView<String> tablesListView;
 
+    ListProperty<String> scopeListProperty = new SimpleListProperty<>();
+    ListView<String> scopeListView;
+
+    private ProgressIndicator progressIndicator;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        HBox.setHgrow(msgBar, Priority.ALWAYS);
+        HBox.setHgrow(buttonBar, Priority.SOMETIMES);
+
+        progressIndicator = new ProgressIndicator();
+        progressIndicator.setPrefSize(100, 100);
+        progressIndicator.setVisible(false);
+        buttonBar.getChildren().add(0, progressIndicator);
+
+        // Don't enable the "Perform Data Scan" button initially. Only when a DB/Schema/table(s) is selected and
+        // we have gathered all tables metadata, enable this button.
+        datascanBtn.setDisable(true);
+
         // This step gathers the Database and all the schemas in the Databases and stores in Application level map.
         fetchDBMetadata();
 
@@ -136,6 +166,12 @@ public class MainWindowController implements Initializable {
         tablesListView.itemsProperty().bind(tablesListProperty);
         tablesListView.prefHeightProperty().bind(tablesVBox.heightProperty());
         tablesVBox.getChildren().add(tablesListView);
+
+        // This listview is to show the table list that will be scanned.
+        scopeListView = new ListView<>();
+        scopeListView.itemsProperty().bind(scopeListProperty);
+        scopeListView.prefHeightProperty().bind(scopeBox.heightProperty());
+        scopeBox.getChildren().add(scopeListView);
     }
 
     private void showDatabases() {
@@ -356,71 +392,122 @@ public class MainWindowController implements Initializable {
      */
     @FXML
     private void performDataScan(ActionEvent event) {
+
+    }
+
+    @FXML
+    private void showScope(ActionEvent event) {
+        String db = AppData.userSelectionDB;
+        String schema = AppData.userSelectionSchema;
+
         if (databaseBtn.isSelected()) {
-            if (AppData.userSelectionDB == null) {
-                statusMessage.setText("Select a Database to perform Data scan @ DB level !");
+            // If user clicked on the "Show Scope" button without selection a DB, show this message !
+            if (db == null) {
+                message.setText("Select a Database to perform Data scan @ DB level !");
                 return;
             } else {
-                statusMessage.setText("Datascan @ DB Level: " + AppData.userSelectionDB);
-
-                // Ensure that we have table list of all schemas in this database. otherwise, fetch them. This is going
-                // to submit a number of threads.
-                for (String schema : AppData.tables.get(AppData.userSelectionDB).keySet()) {
-                    if (AppData.tables.get(AppData.userSelectionDB).get(schema).keySet().size() == 0) {
-                        Thread t = new Thread(new FetchTablesListInASchemaTask(AppData.userSelectionDB, schema, false));
-                        t.start();
-                    }
-                }
-
-                for (String schema : AppData.tables.get(AppData.userSelectionDB).keySet()) {
-                    for (TableDetail tableDetail : AppData.tables.get(AppData.userSelectionDB).get(schema).keySet()) {
-                        TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(AppData.userSelectionDB).get(schema).get(tableDetail));
-                        AppData.tablesTobeScanned.add(tableWrapper);
-                    }
-                }
+                progressIndicator.setVisible(true);
+                Thread t = new Thread(new GatherDatascanScopeTask(db));
+                t.start();
             }
         }
 
         if (schemaBtn.isSelected()) {
-            if (AppData.userSelectionSchema == null) {
-                statusMessage.setText("Select a schema in DB: " + AppData.userSelectionDB + " to perform Data scan @ Schema level !");
+            if (schema == null) {
+                message.setText("Select a schema in DB: " + db + " to perform Data scan @ Schema level !");
                 return;
             } else {
-                statusMessage.setText("Datascan @ Schema Level: " + AppData.userSelectionDB + "." + AppData.userSelectionSchema);
-                for (TableDetail tableDetail : AppData.tables.get(AppData.userSelectionDB).get(AppData.userSelectionSchema).keySet()) {
-                    TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(AppData.userSelectionDB).get(AppData.userSelectionSchema).get(tableDetail));
+                message.setText("Datascan @ Schema Level: " + db + "." + schema);
+                ObservableList<String> listData = FXCollections.observableArrayList();
+
+                for (TableDetail tableDetail : AppData.tables.get(db).get(schema).keySet()) {
+                    TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(db).get(schema).get(tableDetail));
                     AppData.tablesTobeScanned.add(tableWrapper);
+                    listData.add("[" + db + "][" + schema + "][" + tableDetail.getTable() + "]");
                 }
+
+                // Show the list
+                scopeListProperty.clear();
+                scopeListProperty.set(listData);
             }
         }
 
         if (tableBtn.isSelected()) {
-            if (AppData.userSelectionDB == null || AppData.userSelectionSchema == null) {
-                statusMessage.setText("Select a DB and a Schema first !");
+            if (db == null || schema == null) {
+                message.setText("Select a DB and a Schema first !");
                 return;
             }
 
             ObservableList<Integer> selectedIndices = tablesListView.getSelectionModel().getSelectedIndices();
 
             if (selectedIndices.size() == 0) {
-                statusMessage.setText("Select one/more tables in DB: " + AppData.userSelectionDB +
-                        " Schema: " + AppData.userSelectionSchema + " to perform Data scan @ table level !");
+                message.setText("Select one/more tables in DB: " + db + " Schema: " + schema + " to perform Data scan @ table level !");
                 return;
             } else {
                 StringBuilder msg = new StringBuilder();
-                msg.append("Datascan @ Table level: " + AppData.userSelectionDB + "." + AppData.userSelectionSchema);
+                ObservableList<String> listData = FXCollections.observableArrayList();
+                msg.append("Datascan @ Table level: " + db + "." + schema);
 
                 for (Integer index : selectedIndices) {
                     msg.append("\n").append("\t" + tablesListProperty.get(index));
 
-                    TableDetail tableDetail = new TableDetail(AppData.userSelectionDB, AppData.userSelectionSchema, tablesListProperty.get(index), "BASE TABLE");
-                    TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(AppData.userSelectionDB).get(AppData.userSelectionSchema).get(tableDetail));
+                    TableDetail tableDetail = new TableDetail(db, schema, tablesListProperty.get(index), "BASE TABLE");
+                    TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(db).get(schema).get(tableDetail));
                     AppData.tablesTobeScanned.add(tableWrapper);
+                    listData.add("[" + db + "][" + schema + "][" + tableDetail.getTable() + "]");
                 }
 
-                statusMessage.setText(msg.toString());
-
+                // Show the list
+                scopeListProperty.clear();
+                scopeListProperty.set(listData);
             }
+        }
+    }
+
+    /**
+     * Prepares actual scope of Data scan. For instance, if scope is "database", it means, all tables in all schemas
+     * of the selected database needs to be scanned. In order to do that, we need to gather columns of all the tables.
+     * This class does that.
+     * <p>
+     * If the scope is "Schema" or "table", we have already gathered the list.
+     */
+    class GatherDatascanScopeTask extends Task<Integer> {
+        private String db;
+
+        public GatherDatascanScopeTask(String db) {
+            this.db = db;
+        }
+
+        @Override
+        protected Integer call() throws Exception {
+            int tableCount = 0;
+            // This step gather metadata of all schemas for which there is no entry in the App level map.
+            for (String schema : AppData.tables.get(this.db).keySet()) {
+                if (AppData.tables.get(this.db).get(schema).keySet().size() == 0) {
+                    Thread t = new Thread(new FetchTablesListInASchemaTask(this.db, schema, false));
+                    t.start();
+                    t.join();
+                }
+            }
+
+            ObservableList<String> listData = FXCollections.observableArrayList();
+
+            for (String schema : AppData.tables.get(this.db).keySet()) {
+                for (TableDetail tableDetail : AppData.tables.get(this.db).get(schema).keySet()) {
+                    TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(this.db).get(schema).get(tableDetail));
+                    AppData.tablesTobeScanned.add(tableWrapper);
+                    tableCount++;
+                    listData.add("[" + tableCount + "]. " + this.db + " : " + schema + " : " + tableDetail.getTable());
+                }
+            }
+
+            Platform.runLater(() -> {
+                // Show the list
+                progressIndicator.setVisible(false);
+                scopeListProperty.clear();
+                scopeListProperty.set(listData);
+            });
+            return tableCount;
         }
     }
 }

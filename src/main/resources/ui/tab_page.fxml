@@ -19,11 +19,27 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="823.0" prefWidth="1115.0" stylesheets="@../css/main-window.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.analyzer.controllers.MainWindowController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="823.0" prefWidth="1366.0" stylesheets="@../css/main-window.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.analyzer.controllers.MainWindowController">
     <bottom>
-        <HBox alignment="CENTER_RIGHT" prefHeight="52.0" prefWidth="1115.0" spacing="10.0" style="-fx-background-color: #373741;" BorderPane.alignment="CENTER">
+        <HBox fx:id="statusBar" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="1115.0" spacing="10.0" style="-fx-background-color: #373741;" BorderPane.alignment="CENTER">
             <children>
-                <Button fx:id="datascanBtn" mnemonicParsing="false" onAction="#performDataScan" styleClass="click-button" text="Perform Data Scan" />
+                <HBox fx:id="msgBar" prefHeight="43.0" prefWidth="774.0">
+                    <children>
+                        <Label fx:id="message" styleClass="hbox-label" />
+                    </children>
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                    <padding>
+                        <Insets left="10.0" right="10.0" />
+                    </padding>
+                </HBox>
+                <HBox fx:id="buttonBar" alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <Button fx:id="showScopeBtn" mnemonicParsing="false" onAction="#showScope" styleClass="click-button" text="Show Scope" />
+                        <Button fx:id="datascanBtn" mnemonicParsing="false" onAction="#performDataScan" styleClass="click-button" text="Perform Data Scan" />
+                    </children>
+                </HBox>
             </children>
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -42,7 +58,7 @@
                                         <ColumnConstraints hgrow="NEVER" />
                                         <ColumnConstraints fx:id="gridColumn1" hgrow="ALWAYS" percentWidth="20.0" />
                                         <ColumnConstraints fx:id="gridColumn2" hgrow="ALWAYS" />
-                                        <ColumnConstraints fx:id="gridColumn3" hgrow="ALWAYS" />
+                                        <ColumnConstraints fx:id="gridColumn3" hgrow="ALWAYS" percentWidth="35.0" />
                                     </columnConstraints>
                                     <rowConstraints>
                                         <RowConstraints vgrow="ALWAYS" />
@@ -150,14 +166,24 @@
                                                     </children>
                                                 </HBox>
                                             </children>
+                                 <padding>
+                                    <Insets bottom="15.0" />
+                                 </padding>
                                         </VBox>
-                                        <VBox spacing="10.0" GridPane.columnIndex="3">
+                                        <VBox fx:id="scopeBox" GridPane.columnIndex="3">
                                             <children>
-                                                <Label fx:id="statusMessage" text="" wrapText="true" />
+                                                <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="52.0" prefWidth="296.0" styleClass="heading-1">
+                                                    <padding>
+                                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                    </padding>
+                                                    <children>
+                                                        <Label styleClass="hbox-label" text="Tables to be Scanned" />
+                                                    </children>
+                                                </HBox>
                                             </children>
-                                            <padding>
-                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                            </padding>
+                                 <padding>
+                                    <Insets bottom="15.0" />
+                                 </padding>
                                         </VBox>
                                     </children>
                                 </GridPane>
