@@ -47,9 +47,9 @@
         </HBox>
     </bottom>
     <center>
-        <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <TabPane fx:id="tabPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
             <tabs>
-                <Tab text="Settings">
+                <Tab fx:id="settingsTab" text="Settings">
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                             <children>
@@ -166,9 +166,9 @@
                                                     </children>
                                                 </HBox>
                                             </children>
-                                 <padding>
-                                    <Insets bottom="15.0" />
-                                 </padding>
+                                            <padding>
+                                                <Insets bottom="15.0" />
+                                            </padding>
                                         </VBox>
                                         <VBox fx:id="scopeBox" GridPane.columnIndex="3">
                                             <children>
@@ -181,9 +181,9 @@
                                                     </children>
                                                 </HBox>
                                             </children>
-                                 <padding>
-                                    <Insets bottom="15.0" />
-                                 </padding>
+                                            <padding>
+                                                <Insets bottom="15.0" />
+                                            </padding>
                                         </VBox>
                                     </children>
                                 </GridPane>
@@ -191,12 +191,12 @@
                         </AnchorPane>
                     </content>
                 </Tab>
-                <Tab text="Dashboard">
+                <Tab fx:id="dashboardTab" text="Dashboard">
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                     </content>
                 </Tab>
-                <Tab text="Report">
+                <Tab fx:id="reportTab" text="Report">
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                     </content>

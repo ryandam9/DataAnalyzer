@@ -1,5 +1,6 @@
 package com.analyzer.controllers;
 
+import com.analyzer.Utils;
 import com.analyzer.classes.AppData;
 import com.analyzer.classes.TableWrapper;
 import com.dbutils.common.ColumnDetail;
@@ -13,17 +14,23 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
+import java.io.File;
 import java.net.URL;
 import java.util.*;
 
 import static com.analyzer.AppLogger.logger;
+import static com.analyzer.Utils.logStackTrace;
 
 public class MainWindowController implements Initializable {
     @FXML
@@ -40,6 +47,18 @@ public class MainWindowController implements Initializable {
 
     @FXML
     private TextField prefRecordsToScan;
+
+    @FXML
+    private TabPane tabPane;
+
+    @FXML
+    private Tab settingsTab;
+
+    @FXML
+    private Tab dashboardTab;
+
+    @FXML
+    private Tab reportTab;
 
     @FXML
     private AnchorPane databasesAnchorPane;
@@ -86,25 +105,29 @@ public class MainWindowController implements Initializable {
     @FXML
     private Button datascanBtn;
 
-    ListProperty<String> databasesListProperty = new SimpleListProperty<>();
-    ListView<String> databasesListView;
+    private ListProperty<String> databasesListProperty = new SimpleListProperty<>();
+    private ListView<String> databasesListView;
 
-    ListProperty<String> schemasListProperty = new SimpleListProperty<>();
-    ListView<String> schemasListView;
+    private ListProperty<String> schemasListProperty = new SimpleListProperty<>();
+    private ListView<String> schemasListView;
 
-    ListProperty<String> tablesListProperty = new SimpleListProperty<>();
-    ListView<String> tablesListView;
+    private ListProperty<String> tablesListProperty = new SimpleListProperty<>();
+    private ListView<String> tablesListView;
 
-    ListProperty<String> scopeListProperty = new SimpleListProperty<>();
-    ListView<String> scopeListView;
+    private ListProperty<String> scopeListProperty = new SimpleListProperty<>();
+    private ListView<String> scopeListView;
 
     private ProgressIndicator progressIndicator;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        HBox.setHgrow(msgBar, Priority.ALWAYS);
-        HBox.setHgrow(buttonBar, Priority.SOMETIMES);
+        prefRecordsToScan.setText("100000");
+        prefParallelTaskCount.setText("10");
 
+        HBox.setHgrow(msgBar, Priority.ALWAYS);            // Only contains a Label to show status messages.
+        HBox.setHgrow(buttonBar, Priority.SOMETIMES);      // Contains Progress Indicator, "Show Scope" and "Perform Data scan" buttons.
+
+        // Create a Progress Indicator
         progressIndicator = new ProgressIndicator();
         progressIndicator.setPrefSize(100, 100);
         progressIndicator.setVisible(false);
@@ -114,7 +137,9 @@ public class MainWindowController implements Initializable {
         // we have gathered all tables metadata, enable this button.
         datascanBtn.setDisable(true);
 
-        // This step gathers the Database and all the schemas in the Databases and stores in Application level map.
+        // This step gathers the names of databases and all the schemas in those databases, and stores in Application level map.
+        // There could be thousands of tables in a Schema ! It is not a good idea to gather metadata of all those
+        // tables at this point.
         fetchDBMetadata();
 
         // Create a list view to show databases and bind its Items property with a List Property.
@@ -122,24 +147,19 @@ public class MainWindowController implements Initializable {
         databasesListView.itemsProperty().bind(databasesListProperty);
         databasesListView.prefHeightProperty().bind(databasesVBox.heightProperty());
         databasesVBox.getChildren().add(databasesListView);
-        showDatabases();
 
         // Only one database can be selected for scanning at a time
         databasesListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         // When a database is clicked, its Schemas should be rendered in the Schema window.
-        databasesListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                String selectedItem = databasesListView.getSelectionModel().getSelectedItem();
-                AppData.userSelectionDB = selectedItem;
-                AppData.userSelectionSchema = null;
-                AppData.userSelectionTables.removeAll(AppData.userSelectionTables);
+        databasesListView.setOnMouseClicked(event -> {
+            AppData.userSelectionDB = databasesListView.getSelectionModel().getSelectedItem();
+            AppData.userSelectionSchema = null;
+            AppData.userSelectionTables.clear();
 
-                // When a Database selection is made, show schemas only. Clear any previously shown tables !
-                tablesListProperty.clear();
-                showSchemas();
-            }
+            // When a Database selection is made, show schemas only. Clear any previously shown tables !
+            tablesListProperty.clear();
+            showSchemas();
         });
 
         // Schemas
@@ -150,14 +170,10 @@ public class MainWindowController implements Initializable {
         schemasVBox.getChildren().add(schemasListView);
 
         // When a schema is clicked, its tables should be rendered in the tables window.
-        schemasListView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                String selectedItem = schemasListView.getSelectionModel().getSelectedItem();
-                AppData.userSelectionSchema = selectedItem;
-                AppData.userSelectionTables.removeAll(AppData.userSelectionTables);
-                showTables();
-            }
+        schemasListView.setOnMouseClicked(event -> {
+            AppData.userSelectionSchema = schemasListView.getSelectionModel().getSelectedItem();
+            AppData.userSelectionTables.clear();
+            showTables();
         });
 
         // Tables
@@ -174,30 +190,36 @@ public class MainWindowController implements Initializable {
         scopeBox.getChildren().add(scopeListView);
     }
 
+    /**
+     * Reads Database names from the Application level Map, sorts them and updates the backend of Database Listview
+     */
     private void showDatabases() {
         List<String> databases = new ArrayList<>(AppData.tables.keySet());  // Get list of databases
-        Collections.sort(databases, (o1, o2) -> o1.toLowerCase().compareTo(o2.toLowerCase()));
+        databases.sort(Comparator.comparing(String::toLowerCase));
 
         ObservableList<String> listData = FXCollections.observableArrayList();
+        listData.addAll(databases);
+
         databasesListProperty.clear();
-        databases.forEach((db) -> listData.add(db));
         databasesListProperty.set(listData);
     }
 
+    /**
+     * This is called when the User clicks on any of Database list view. Shows all the schemas in the Selected DB.
+     */
     private void showSchemas() {
         String db = AppData.userSelectionDB;
         ObservableList<String> listData = FXCollections.observableArrayList();
-
-        for (String schema : AppData.tables.get(db).keySet()) {
-            listData.add(schema);
-        }
-
-        Collections.sort(listData, (o1, o2) -> o1.toLowerCase().compareTo(o2.toLowerCase()));
+        listData.addAll(AppData.tables.get(db).keySet());     // Get the schema names
+        listData.sort(Comparator.comparing(String::toLowerCase));
 
         schemasListProperty.clear();
         schemasListProperty.set(listData);
     }
 
+    /**
+     *
+     */
     private void showTables() {
         String db = AppData.userSelectionDB;
         String schema = AppData.userSelectionSchema;
@@ -217,65 +239,80 @@ public class MainWindowController implements Initializable {
      * Also, updates the Database and Schemas list views.
      */
     private void fetchDBMetadata() {
-        List<String> databases = new ArrayList<>();
-        List<String> schemas = new ArrayList<>();
+        Thread t = new Thread(new FetchSchemaListInADatabaseTask());
+        t.start();
+    }
 
-        Map<String, List<String>> dbSchemas = new HashMap<>();      // Database + List of schemas in it.
+    class FetchSchemaListInADatabaseTask extends Task<Integer> {
+        @Override
+        protected Integer call() throws Exception {
+            List<String> databases = new ArrayList<>();
+            List<String> schemas = new ArrayList<>();
+            Platform.runLater(() -> progressIndicator.setVisible(true));
+            int noSchemas = 0;
 
-        switch (AppData.dbSelection) {
-            case AppData.ORACLE:
-                // First get all Database names
-                try {
-                    databases = OracleMetadata.getAllDatabases(AppData.initialConnection);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-
-                // For each DB, fetch the Schemas.
-                for (String db : databases) {
+            switch (AppData.dbSelection) {
+                case AppData.ORACLE:
+                    // First get all Database names
                     try {
-                        // Update application level dictionary for later use
-                        AppData.tables.put(db, new HashMap<>());
-
-                        schemas = OracleMetadata.getAllSchemas(AppData.initialConnection, db);
-                        dbSchemas.put(db, schemas);
-
-                        // Update the application level dictionary with all the Schemas.
-                        for (String schema : schemas) {
-                            AppData.tables.get(db).put(schema, new HashMap<>());
-                        }
+                        databases = OracleMetadata.getAllDatabases(AppData.initialConnection);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                }
-                break;
 
-            case AppData.SQL_SERVER:
-                // First get all Database names
-                try {
-                    databases = SqlServerMetadata.getAllDatabases(AppData.initialConnection);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                    // For each DB, fetch the Schemas.
+                    for (String db : databases) {
+                        Platform.runLater(() -> message.setText("Gathering schema names in DB: " + db));
+                        try {
+                            // Make an entry for the Database
+                            AppData.tables.put(db, new HashMap<>());
+                            schemas = OracleMetadata.getAllSchemas(AppData.initialConnection, db);
 
-                // For each DB, fetch the Schemas.
-                for (String db : databases) {
-                    try {
-                        // Update application level dictionary for later use
-                        AppData.tables.put(db, new HashMap<>());
-
-                        schemas = SqlServerMetadata.getAllSchemas(AppData.initialConnection, db);
-                        dbSchemas.put(db, schemas);
-
-                        // Update the application level dictionary with all the Schemas.
-                        for (String schema : schemas) {
-                            AppData.tables.get(db).put(schema, new HashMap<>());
+                            // Update the application level dictionary with all the Schemas.
+                            for (String schema : schemas) {
+                                AppData.tables.get(db).put(schema, new HashMap<>());
+                                noSchemas++;
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
+                    }
+                    break;
+
+                case AppData.SQL_SERVER:
+                    // First get all Database names
+                    try {
+                        databases = SqlServerMetadata.getAllDatabases(AppData.initialConnection);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                }
-                break;
+
+                    // For each DB, fetch the Schemas.
+                    for (String db : databases) {
+                        Platform.runLater(() -> message.setText("Gathering schema names in DB: " + db));
+                        try {
+                            // Update application level dictionary for later use
+                            AppData.tables.put(db, new HashMap<>());
+                            schemas = SqlServerMetadata.getAllSchemas(AppData.initialConnection, db);
+
+                            // Update the application level dictionary with all the Schemas.
+                            for (String schema : schemas) {
+                                AppData.tables.get(db).put(schema, new HashMap<>());
+                                noSchemas++;
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    break;
+            }
+            Platform.runLater(() -> {
+                progressIndicator.setVisible(false);
+                message.setText("");
+            });
+
+            showDatabases();
+            return noSchemas;
         }
     }
 
@@ -308,7 +345,7 @@ public class MainWindowController implements Initializable {
 
         @Override
         protected Integer call() throws Exception {
-//            Platform.runLater(() -> progressIndicator.setVisible(true));
+            Platform.runLater(() -> progressIndicator.setVisible(true));
             Map<TableDetail, List<ColumnDetail>> tablesMap = new HashMap<>();
             int tableCount = 0;
 
@@ -334,14 +371,13 @@ public class MainWindowController implements Initializable {
                     sortAndShowTables(this.db, this.schema);
             }
 
-//            Platform.runLater(() -> parent.getChildren().addAll(tablesInThisSchema));
             return tableCount;
         }
 
         @Override
         protected void done() {
             super.done();
-//            Platform.runLater(() -> progressIndicator.setVisible(false));
+            Platform.runLater(() -> progressIndicator.setVisible(false));
         }
     }
 
@@ -356,12 +392,7 @@ public class MainWindowController implements Initializable {
         List<TableDetail> unorderedTables = new ArrayList<>(AppData.tables.get(db).get(schema).keySet());
 
         // Sort the tables on table name
-        Collections.sort(unorderedTables, new Comparator<TableDetail>() {
-            @Override
-            public int compare(TableDetail o1, TableDetail o2) {
-                return o1.getTable().toLowerCase().compareTo(o2.getTable().toLowerCase());
-            }
-        });
+        unorderedTables.sort(Comparator.comparing(o -> o.getTable().toLowerCase()));
 
         // Type of table entry is "TableDetail". Just get the table name as a String
         ObservableList<String> listData = FXCollections.observableArrayList();
@@ -374,13 +405,26 @@ public class MainWindowController implements Initializable {
         });
     }
 
+    @FXML
+    private void performDataScan(ActionEvent event) {
+        try {
+            URL url = new File("resources/ui/scan_dashboard.fxml").toURI().toURL();
+            Parent root = FXMLLoader.load(url);
+            dashboardTab.setContent(root);
+            tabPane.getSelectionModel().select(dashboardTab);
+        } catch (Exception ex) {
+            logStackTrace(ex);
+        }
+    }
+
     /**
-     * This method is called when "Perform Data Scan" button is clicked. It tries to find the scope of Data scan. The three
+     * This method is called when "Show Scope" button is clicked. It tries to find the scope of Data scan. The three
      * options are:
-     * a. Database level
-     * b. Schema level
-     * c. Table level
-     * <p>
+     * <pre>
+     *      a. Database level
+     *      b. Schema level
+     *      c. Table level
+     * </pre>
      * It identifies the scope by reading the radio buttons and validates the user selections done so far and shows
      * warning messages accordingly (For Instance, if the "Database" radio button is checked and no database is
      * selected, Data scan cannot be done !!).
@@ -391,12 +435,9 @@ public class MainWindowController implements Initializable {
      * @param event
      */
     @FXML
-    private void performDataScan(ActionEvent event) {
-
-    }
-
-    @FXML
     private void showScope(ActionEvent event) {
+        message.setText("");            // Clear previously shown messages
+
         String db = AppData.userSelectionDB;
         String schema = AppData.userSelectionSchema;
 
@@ -419,11 +460,13 @@ public class MainWindowController implements Initializable {
             } else {
                 message.setText("Datascan @ Schema Level: " + db + "." + schema);
                 ObservableList<String> listData = FXCollections.observableArrayList();
+                int tableCount = 0;
 
                 for (TableDetail tableDetail : AppData.tables.get(db).get(schema).keySet()) {
                     TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(db).get(schema).get(tableDetail));
                     AppData.tablesTobeScanned.add(tableWrapper);
-                    listData.add("[" + db + "][" + schema + "][" + tableDetail.getTable() + "]");
+                    tableCount++;
+                    listData.add("[" + tableCount + "] " + db + " : " + schema + " : " + tableDetail.getTable());
                 }
 
                 // Show the list
@@ -444,17 +487,15 @@ public class MainWindowController implements Initializable {
                 message.setText("Select one/more tables in DB: " + db + " Schema: " + schema + " to perform Data scan @ table level !");
                 return;
             } else {
-                StringBuilder msg = new StringBuilder();
                 ObservableList<String> listData = FXCollections.observableArrayList();
-                msg.append("Datascan @ Table level: " + db + "." + schema);
+                int tableCount = 0;
 
                 for (Integer index : selectedIndices) {
-                    msg.append("\n").append("\t" + tablesListProperty.get(index));
-
                     TableDetail tableDetail = new TableDetail(db, schema, tablesListProperty.get(index), "BASE TABLE");
                     TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(db).get(schema).get(tableDetail));
                     AppData.tablesTobeScanned.add(tableWrapper);
-                    listData.add("[" + db + "][" + schema + "][" + tableDetail.getTable() + "]");
+                    tableCount++;
+                    listData.add("[" + tableCount + "] " + db + " : " + schema + " : " + tableDetail.getTable());
                 }
 
                 // Show the list
@@ -462,6 +503,8 @@ public class MainWindowController implements Initializable {
                 scopeListProperty.set(listData);
             }
         }
+
+        datascanBtn.setDisable(false);
     }
 
     /**
@@ -484,6 +527,7 @@ public class MainWindowController implements Initializable {
             // This step gather metadata of all schemas for which there is no entry in the App level map.
             for (String schema : AppData.tables.get(this.db).keySet()) {
                 if (AppData.tables.get(this.db).get(schema).keySet().size() == 0) {
+                    Platform.runLater(() -> message.setText("Gather table list for schema: " + this.db + "." + schema));
                     Thread t = new Thread(new FetchTablesListInASchemaTask(this.db, schema, false));
                     t.start();
                     t.join();
@@ -492,20 +536,28 @@ public class MainWindowController implements Initializable {
 
             ObservableList<String> listData = FXCollections.observableArrayList();
 
-            for (String schema : AppData.tables.get(this.db).keySet()) {
-                for (TableDetail tableDetail : AppData.tables.get(this.db).get(schema).keySet()) {
+            List<String> schemas = new ArrayList<>(AppData.tables.get(this.db).keySet());
+            schemas.sort(Comparator.comparing(o -> o.toLowerCase()));
+
+            for (String schema : schemas) {
+                List<TableDetail> tables = new ArrayList<>(AppData.tables.get(this.db).get(schema).keySet());
+                tables.sort(Comparator.comparing(o -> o.getTable().toLowerCase()));
+
+                for (TableDetail tableDetail : tables) {
                     TableWrapper tableWrapper = new TableWrapper(tableDetail, AppData.tables.get(this.db).get(schema).get(tableDetail));
                     AppData.tablesTobeScanned.add(tableWrapper);
                     tableCount++;
-                    listData.add("[" + tableCount + "]. " + this.db + " : " + schema + " : " + tableDetail.getTable());
+                    listData.add("[" + tableCount + "] " + this.db + " : " + schema + " : " + tableDetail.getTable());
                 }
             }
 
             Platform.runLater(() -> {
                 // Show the list
                 progressIndicator.setVisible(false);
+                message.setText("");
                 scopeListProperty.clear();
                 scopeListProperty.set(listData);
+                datascanBtn.setDisable(false);
             });
             return tableCount;
         }

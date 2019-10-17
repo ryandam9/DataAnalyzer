@@ -17,6 +17,8 @@ public class AppData {
     public static String db;
     public static String port;
     public static Connection initialConnection;
+    public static int prefParallelTaskCount;
+    public static int prefRecordsToScan;
 
     // Constants
     public static final String ORACLE = "Oracle";
