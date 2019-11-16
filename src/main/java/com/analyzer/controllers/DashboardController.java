@@ -1,22 +1,24 @@
 package com.analyzer.controllers;
 
 import com.analyzer.classes.AppData;
-import com.analyzer.scanning.DatascanTask;
+import com.analyzer.classes.TableToAnalyze;
+import com.analyzer.scanning.DataScanActivity;
 import com.analyzer.ui.TaskTile;
 import com.dbutils.common.DBConnections;
-import com.dbutils.masking.DatascanResult;
+import com.dbutils.masking.DataScanResult;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.TilePane;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -32,33 +34,57 @@ import static com.analyzer.AppLogger.logger;
 import static com.analyzer.Utils.logStackTrace;
 
 public class DashboardController implements Initializable {
+    @FXML
+    private SplitPane splitPane;
 
     @FXML
-    private TextField tablesToBeScanned;
+    private Label tablesToBeScanned;
 
     @FXML
-    private TextField scannedSoFar;
+    private Label scannedSoFar;
 
     @FXML
-    private TextField poolSize;
+    private Label poolSize;
 
     @FXML
-    private TextField activeCount;
+    private Label activeCount;
 
     @FXML
-    private TextField taskCount;
+    private Label taskCount;
 
     @FXML
-    private TextField completedTasks;
+    private Label completedTasks;
 
     @FXML
-    private ScrollPane dashboardArea;
+    private BorderPane rightAnchorPane;
 
     @FXML
-    public Button showButton;
+    private TableView<TableToAnalyze> tableView;
+
+    @FXML
+    private TableColumn<TableToAnalyze, String> sno;
+
+    @FXML
+    private TableColumn<TableToAnalyze, String> db;
+
+    @FXML
+    private TableColumn<TableToAnalyze, String> schema;
+
+    @FXML
+    private TableColumn<TableToAnalyze, String> table;
+
+    @FXML
+    private TableColumn<TableToAnalyze, String> recordsToScan;
+
+    @FXML
+    private TableColumn<TableToAnalyze, String> soFarScanned;
+
+    @FXML
+    private TableColumn<TableToAnalyze, String> status;
 
     private List<Connection> connections;
     private List<TaskTile> tiles = new ArrayList<>();
+    ObservableList<TableToAnalyze> list = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -73,36 +99,32 @@ public class DashboardController implements Initializable {
             logStackTrace(ex);
         }
 
-        // Create a Tile pane
-        TilePane tilePane = new TilePane(Orientation.HORIZONTAL);
-        tilePane.setHgap(10.0);
-        tilePane.setVgap(10.0);
-        tilePane.setPadding(new Insets(20, 20, 20, 20));
-        tilePane.setPrefColumns(4);
-        tilePane.setMaxWidth(Region.USE_PREF_SIZE);
+        sno.setCellValueFactory(new PropertyValueFactory<>("sno"));
+        db.setCellValueFactory(new PropertyValueFactory<>("db"));
+        schema.setCellValueFactory(new PropertyValueFactory<>("schema"));
+        table.setCellValueFactory(new PropertyValueFactory<>("table"));
+        recordsToScan.setCellValueFactory(new PropertyValueFactory<>("recordsToScan"));
+        soFarScanned.setCellValueFactory(new PropertyValueFactory<>("soFarScanned"));
+        status.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        dashboardArea.setContent(tilePane);
-        dashboardArea.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        dashboardArea.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+        list.clear();
 
-        // Create a tile for each task
-        for (int i = 0; i < AppData.noThreads; i++) {
-            TaskTile tile = createTile();
-            tilePane.getChildren().addAll(tile);
-            tiles.add(tile);
+        // Create a tile for each table to be Scanned.
+        for (int i = 0; i < AppData.tablesTobeScanned.size(); i++) {
+            TableToAnalyze row = new TableToAnalyze(Integer.toString(i),
+                    AppData.tablesTobeScanned.get(i).getTableDetail().getDb(),
+                    AppData.tablesTobeScanned.get(i).getTableDetail().getSchema(),
+                    AppData.tablesTobeScanned.get(i).getTableDetail().getTable(),
+                    "",
+                    "",
+                    "NOT STARTED");
+
+            tableView.getItems().add(row);
         }
-    }
 
-    private TaskTile createTile() {
-        TaskTile tile = new TaskTile("", "", "");
-        tile.getStyleClass().add("tile-box");
-        return tile;
-    }
+//        SplitPane.setResizableWithParent(rightAnchorPane, true);
 
-    @FXML
-    private void showDashboard(ActionEvent event) {
-        showButton.setDisable(true);
-        new Thread(new PerformDatascan()).start();
+        //new Thread(new PerformDatascan()).start();
     }
 
     /**
@@ -120,8 +142,8 @@ public class DashboardController implements Initializable {
         @Override
         protected Integer call() {
             try {
-                List<Future<DatascanResult>> resultList = new ArrayList<>();    // holds results of Data scan
-                List<DatascanTask> tasks = new ArrayList<>();
+                List<Future<DataScanResult>> resultList = new ArrayList<>();    // holds results of Data scan
+                List<DataScanActivity> tasks = new ArrayList<>();
 
                 int tableId = 0;
                 int maxParallelTasks = AppData.noThreads;
@@ -157,7 +179,7 @@ public class DashboardController implements Initializable {
                             logger.debug("Table to be analyzed: " + tableName);
                             logger.debug("Table Id to be submitted: " + tableId);
 
-                            DatascanTask task = new DatascanTask(tableId, connections.get(i),
+                            DataScanActivity task = new DataScanActivity(tableId, connections.get(i),
                                     AppData.tablesTobeScanned.get(tableId).getTableDetail(),
                                     AppData.tablesTobeScanned.get(tableId).getColumnDetailList(),
                                     t);
@@ -169,7 +191,7 @@ public class DashboardController implements Initializable {
                             });
 
                             tasks.add(task);
-                            Future<DatascanResult> result = executor.submit(task);   // Submits a task via a Thread.
+                            Future<DataScanResult> result = executor.submit(task);   // Submits a task via a Thread.
                             resultList.add(result);                                  // Holds results of all Submitted tasks. Need this to generate a final report.
                             currentlyRunningTasks[i] = result;                       // Holds only the currently running tasks. need this to monitor their progress.
                             taskStatus.set(i, 1);       // Change the status from 0 to 1.
@@ -184,7 +206,7 @@ public class DashboardController implements Initializable {
                     while (true) {
                         // Check all the currently running tasks and check if they're completed !!
                         for (int i = 0; i < taskStatus.size(); i++) {
-                            Future<DatascanResult> result = (Future<DatascanResult>) (currentlyRunningTasks[i]);
+                            Future<DataScanResult> result = (Future<DataScanResult>) (currentlyRunningTasks[i]);
 
                             if (result.isDone()) {
                                 taskStatus.set(i, 0);            // Task at this place holder is free.

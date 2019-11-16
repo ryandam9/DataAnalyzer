@@ -1,18 +1,23 @@
 package com.analyzer.ui;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class TaskTile extends VBox {
+public class TaskTile extends HBox {
+    private Label taskId;
     private Label taskName;
     private Label totalRecordsToScan;
     private Label processedSoFar;
     private ProgressIndicator progressIndicator;
+    private VBox vBox;
 
-    public TaskTile(String taskName, String totalRecordsToScan, String processedSoFar) {
+    public TaskTile(String taskId, String taskName, String totalRecordsToScan, String processedSoFar) {
         this.getStyleClass().add("tile-box");
 
+        this.taskId = createLabel(taskId);
         this.taskName = createLabel(taskName);
         this.totalRecordsToScan = createLabel(totalRecordsToScan);
         this.processedSoFar = createLabel(processedSoFar);
@@ -22,7 +27,13 @@ public class TaskTile extends VBox {
         progressIndicator.getStyleClass().add("progress-indicator");
         progressIndicator.setVisible(false);
 
-        getChildren().addAll(this.taskName, this.totalRecordsToScan, this.processedSoFar, this.progressIndicator);
+        vBox = new VBox();
+        vBox.setPrefSize(100, 30);
+        vBox.setMaxSize(100, 30);
+        vBox.setMinSize(100, 30);
+        vBox.setPadding(new Insets(5, 5, 5, 5));
+
+        getChildren().addAll(this.taskName, this.totalRecordsToScan, this.processedSoFar, this.progressIndicator, this.vBox);
     }
 
     private Label createLabel(String text) {
@@ -69,5 +80,21 @@ public class TaskTile extends VBox {
 
     public void setProgressIndicator(ProgressIndicator progressIndicator) {
         this.progressIndicator = progressIndicator;
+    }
+
+    public Label getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Label taskId) {
+        this.taskId = taskId;
+    }
+
+    public VBox getvBox() {
+        return vBox;
+    }
+
+    public void setvBox(VBox vBox) {
+        this.vBox = vBox;
     }
 }

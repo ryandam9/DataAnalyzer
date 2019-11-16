@@ -1,20 +1,19 @@
 package com.analyzer.scanning;
 
+import com.analyzer.classes.AppData;
 import com.analyzer.ui.TaskTile;
 import com.dbutils.common.ColumnDetail;
 import com.dbutils.common.TableDetail;
-import com.dbutils.masking.DataScanTask;
 import javafx.application.Platform;
-import javafx.scene.control.Label;
 
 import java.sql.Connection;
 import java.util.List;
 
-public class DatascanTask extends DataScanTask {
+public class DataScanActivity extends com.dbutils.masking.DataScanTask {
     private TaskTile tile;
 
-    public DatascanTask(int taskId, Connection connection, TableDetail tableDetail, List<ColumnDetail> columnDetails, TaskTile tile) {
-        super(taskId, connection, tableDetail, columnDetails);
+    public DataScanActivity(int taskId, Connection connection, TableDetail tableDetail, List<ColumnDetail> columnDetails, TaskTile tile) {
+        super(taskId, connection, tableDetail, columnDetails, AppData.dbSelection, AppData.prefRecordsToScan, "Y", 10000);
         this.tile = tile;
     }
 

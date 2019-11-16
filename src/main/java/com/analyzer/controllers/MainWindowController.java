@@ -1,6 +1,5 @@
 package com.analyzer.controllers;
 
-import com.analyzer.Utils;
 import com.analyzer.classes.AppData;
 import com.analyzer.classes.TableWrapper;
 import com.dbutils.common.ColumnDetail;
@@ -8,6 +7,7 @@ import com.dbutils.common.TableDetail;
 import com.dbutils.oracle.OracleMetadata;
 import com.dbutils.sqlserver.SqlServerMetadata;
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -17,13 +17,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.io.File;
 import java.net.URL;
@@ -97,7 +92,7 @@ public class MainWindowController implements Initializable {
     private Label message;
 
     @FXML
-    private HBox buttonBar;
+    private VBox buttonBar;
 
     @FXML
     private Button showScopeBtn;
@@ -125,13 +120,12 @@ public class MainWindowController implements Initializable {
         prefParallelTaskCount.setText("10");
 
         HBox.setHgrow(msgBar, Priority.ALWAYS);            // Only contains a Label to show status messages.
-        HBox.setHgrow(buttonBar, Priority.SOMETIMES);      // Contains Progress Indicator, "Show Scope" and "Perform Data scan" buttons.
 
         // Create a Progress Indicator
         progressIndicator = new ProgressIndicator();
-        progressIndicator.setPrefSize(100, 100);
+        progressIndicator.setPrefSize(70, 70);
         progressIndicator.setVisible(false);
-        buttonBar.getChildren().add(0, progressIndicator);
+        buttonBar.getChildren().add(progressIndicator);
 
         // Don't enable the "Perform Data Scan" button initially. Only when a DB/Schema/table(s) is selected and
         // we have gathered all tables metadata, enable this button.
@@ -409,8 +403,10 @@ public class MainWindowController implements Initializable {
     private void performDataScan(ActionEvent event) {
         try {
             URL url = new File("resources/ui/scan_dashboard.fxml").toURI().toURL();
-            Parent root = FXMLLoader.load(url);
-            dashboardTab.setContent(root);
+            BorderPane borderPane = (BorderPane) FXMLLoader.load(url);
+            borderPane.prefWidthProperty().bind(databaseBtn.getScene().widthProperty());
+            borderPane.prefHeightProperty().bind(databaseBtn.getScene().heightProperty());
+            dashboardTab.setContent(borderPane);
             tabPane.getSelectionModel().select(dashboardTab);
         } catch (Exception ex) {
             logStackTrace(ex);

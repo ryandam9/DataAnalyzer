@@ -88,7 +88,7 @@
 }
 
 .label-level-2-black {
-    -fx-font-size: 15px;
+    -fx-font-size: 13px;
     -fx-text-fill: -fx-dark-black;
     -fx-font-weight: bold;
 }
@@ -255,9 +255,8 @@
 }
 
 .tile-box {
-    -fx-pref-width: 250;
-    -fx-pref-height: 250;
-    -fx-alignment: center;
+    -fx-pref-height: 25;
+    -fx-alignment: center_left;
     -fx-padding: 10;
     -fx-spacing: 30pt;
     -fx-border-color: -fx-light-black;
