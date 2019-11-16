@@ -1,5 +1,10 @@
 package com.analyzer.classes;
 
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.layout.HBox;
+
 public class TableToAnalyze {
     private String sno;
     private String db;
@@ -7,7 +12,7 @@ public class TableToAnalyze {
     private String table;
     private String recordsToScan;
     private String soFarScanned;
-    private String status;
+    private Node status;
 
     public TableToAnalyze(String sno, String db, String schema, String table, String recordsToScan, String soFarScanned, String status) {
         this.sno = sno;
@@ -16,7 +21,20 @@ public class TableToAnalyze {
         this.table = table;
         this.recordsToScan = recordsToScan;
         this.soFarScanned = soFarScanned;
-        this.status = status;
+
+        HBox hBox = new HBox(10);
+
+        // Create a Progress Indicator
+        ProgressIndicator progressIndicator = new ProgressIndicator();
+        progressIndicator.setPrefSize(15, 15);
+        progressIndicator.setVisible(false);
+
+        Label statusMsg = new Label(status);
+        statusMsg.setStyle("-fx-background-color: #7D2996; -fx-text-fill: white");
+
+        hBox.getChildren().addAll(progressIndicator, statusMsg);
+
+        this.status = hBox;
     }
 
     public String getSno() {
@@ -67,11 +85,11 @@ public class TableToAnalyze {
         this.soFarScanned = soFarScanned;
     }
 
-    public String getStatus() {
+    public Node getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Node status) {
         this.status = status;
     }
 }

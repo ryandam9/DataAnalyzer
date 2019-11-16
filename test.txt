@@ -20,12 +20,13 @@ sqlplus 'hr/password@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=database-1.cz8utn
 
 ssh -N -L 1234:database-1.cz8utnieoi7x.us-east-1.rds.amazonaws.com:1521 ec2-user@18.208.198.56 -i green.pem
 
+"jdbc:oracle:thin:" + "admin" + "/" + "password" + "@//" + "127.0.0.1" + ":" + "1234" + "/" + "ORCL";
+
+
 sqlldr admin/password@database-1.cz8utnieoi7x.us-east-1.rds.amazonaws.com:1521/ORCL control=/c/Users/ryand/Desktop/datasets/female_names.ctl
 
 
-RK
-AKIAYIH3RJSUYJ62R2E6
-1ofEwNXE7VXrl9vLmzJfA9YN+aSivD7cfG35qf52
+18.208.198.56
 
 aws ec2 run-instances 
               --image-id xxx \

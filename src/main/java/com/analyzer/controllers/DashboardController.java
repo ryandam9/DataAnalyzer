@@ -13,12 +13,11 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -80,11 +79,10 @@ public class DashboardController implements Initializable {
     private TableColumn<TableToAnalyze, String> soFarScanned;
 
     @FXML
-    private TableColumn<TableToAnalyze, String> status;
+    private TableColumn<TableToAnalyze, Label> status;
 
     private List<Connection> connections;
-    private List<TaskTile> tiles = new ArrayList<>();
-    ObservableList<TableToAnalyze> list = FXCollections.observableArrayList();
+    ObservableList<TableToAnalyze> tableViewRows = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -107,11 +105,11 @@ public class DashboardController implements Initializable {
         soFarScanned.setCellValueFactory(new PropertyValueFactory<>("soFarScanned"));
         status.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        list.clear();
+        tableViewRows.clear();
 
         // Create a tile for each table to be Scanned.
         for (int i = 0; i < AppData.tablesTobeScanned.size(); i++) {
-            TableToAnalyze row = new TableToAnalyze(Integer.toString(i),
+            TableToAnalyze row = new TableToAnalyze(Integer.toString(i+1),
                     AppData.tablesTobeScanned.get(i).getTableDetail().getDb(),
                     AppData.tablesTobeScanned.get(i).getTableDetail().getSchema(),
                     AppData.tablesTobeScanned.get(i).getTableDetail().getTable(),
@@ -119,12 +117,11 @@ public class DashboardController implements Initializable {
                     "",
                     "NOT STARTED");
 
-            tableView.getItems().add(row);
+            tableViewRows.add(row);
         }
 
-//        SplitPane.setResizableWithParent(rightAnchorPane, true);
-
-        //new Thread(new PerformDatascan()).start();
+        tableView.setItems(tableViewRows);
+        new Thread(new PerformDatascan()).start();
     }
 
     /**
@@ -171,7 +168,7 @@ public class DashboardController implements Initializable {
                 // Loop until all tables are scanned and all tasks are completed.
                 while (!allTablesScanned) {
                     for (int i = 0; i < maxParallelTasks && tableId < AppData.tablesTobeScanned.size(); i++) {
-                        TaskTile t = tiles.get(i);
+                        TableToAnalyze tableToAnalyze = tableViewRows.get(i);
 
                         if (taskStatus.get(i) == 0) {
                             String tableName = AppData.tablesTobeScanned.get(tableId).getTableDetail().getTable();
@@ -182,12 +179,12 @@ public class DashboardController implements Initializable {
                             DataScanActivity task = new DataScanActivity(tableId, connections.get(i),
                                     AppData.tablesTobeScanned.get(tableId).getTableDetail(),
                                     AppData.tablesTobeScanned.get(tableId).getColumnDetailList(),
-                                    t);
+                                    tableToAnalyze);
 
                             Platform.runLater(() -> {
-                                t.setProgressIndicator(true);
-                                t.getTaskName().setText("Table being analyzed\n:    " + tableName);
-                                t.getTotalRecordsToScan().setText("999999999");
+                                ((ProgressIndicator) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(0))).setVisible(true);
+                                ((Label) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(1))).setText("RUNNING");
+                                ((Label) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(1))).setStyle("-fx-background-color: #065FD4; -fx-text-fill: white");
                             });
 
                             tasks.add(task);
@@ -198,8 +195,6 @@ public class DashboardController implements Initializable {
                             tableId++;
                         }
                     }
-
-                    logger.debug("Task Status table: " + taskStatus);
 
                     // Wait until at least one task is completed.
                     boolean breakTheLoop = false;
@@ -212,7 +207,7 @@ public class DashboardController implements Initializable {
                                 taskStatus.set(i, 0);            // Task at this place holder is free.
                                 breakTheLoop = true;
                             }
-                            tasks.get(i).updateProgressCount();
+//                            tasks.get(i).updateProgressCount();
                         }
 
                         // If none of the currently running tasks is completed, wait for some time !
@@ -274,9 +269,9 @@ public class DashboardController implements Initializable {
         protected void done() {
             super.done();
 
-            for (TaskTile t : tiles) {
-                t.getProgressIndicator().setVisible(false);
-            }
+//            for (TaskTile t : tiles) {
+//                t.getProgressIndicator().setVisible(false);
+//            }
         }
     }
 }
