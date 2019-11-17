@@ -34,4 +34,7 @@ public class AppData {
     public static String userSelectionDB;
     public static String userSelectionSchema;
     public static List<String> userSelectionTables = new ArrayList<>();
+
+    public static String prefSelectAllColumnsTogether = "Y";
+    public static int prefFetchSize = 20000;
 }

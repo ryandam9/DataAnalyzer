@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="964.0" prefWidth="1388.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.analyzer.controllers.ResultsController">
+    <center>
+        <SplitPane dividerPositions="0.2" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <items>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                    <children>
+                        <SplitPane dividerPositions="0.5" layoutX="40.0" layoutY="256.0" orientation="VERTICAL" prefHeight="912.0" prefWidth="274.4" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <items>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                    <children>
+                                        <VBox layoutX="36.0" layoutY="186.0" prefHeight="452.0" prefWidth="272.8" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT" prefHeight="47.0" prefWidth="273.0" style="-fx-background-color: lightblue;">
+                                                    <children>
+                                                        <Label text="Categories">
+                                                            <padding>
+                                                                <Insets left="10.0" />
+                                                            </padding>
+                                                            <font>
+                                                                <Font name="System Bold" size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </HBox>
+                                                <ListView fx:id="categoriesListView" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                    <children>
+                                        <SplitPane layoutX="40.0" layoutY="134.0" orientation="VERTICAL" prefHeight="452.0" prefWidth="272.8" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <items>
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                                            </items>
+                                        </SplitPane>
+                                    </children>
+                                </AnchorPane>
+                            </items>
+                        </SplitPane>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    </padding>
+                </AnchorPane>
+                <BorderPane prefHeight="855.0" prefWidth="886.0">
+                    <center>
+                        <TableView fx:id="resultsTableView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                            <columns>
+                                <TableColumn fx:id="sno" prefWidth="75.0" text="SNO" />
+                                <TableColumn fx:id="database" prefWidth="75.0" text="DATABASE" />
+                                <TableColumn fx:id="schema" prefWidth="75.0" text="SCHEMA" />
+                                <TableColumn fx:id="table" prefWidth="75.0" text="TABLE" />
+                                <TableColumn fx:id="column" prefWidth="75.0" text="COLUMN" />
+                                <TableColumn fx:id="comments" prefWidth="75.0" text="COMMENTS" />
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                            <BorderPane.margin>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </BorderPane.margin>
+                     <padding>
+                        <Insets bottom="20.0" />
+                     </padding>
+                        </TableView>
+                    </center>
+                </BorderPane>
+            </items>
+        </SplitPane>
+    </center>
+    <top>
+        <HBox prefHeight="50.0" prefWidth="1268.0" BorderPane.alignment="CENTER" />
+    </top>
+</BorderPane>

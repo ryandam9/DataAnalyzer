@@ -1,9 +1,9 @@
 package com.analyzer.controllers;
 
 import com.analyzer.classes.AppData;
+import com.analyzer.classes.DataAnalysisResultRecord;
 import com.analyzer.classes.TableToAnalyze;
 import com.analyzer.scanning.DataScanActivity;
-import com.analyzer.ui.TaskTile;
 import com.dbutils.common.DBConnections;
 import com.dbutils.masking.DataScanResult;
 import javafx.application.Platform;
@@ -12,22 +12,17 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static com.analyzer.AppLogger.logger;
 import static com.analyzer.Utils.logStackTrace;
@@ -83,6 +78,13 @@ public class DashboardController implements Initializable {
 
     private List<Connection> connections;
     ObservableList<TableToAnalyze> tableViewRows = FXCollections.observableArrayList();
+    private ResultsController resultsController;
+
+    public void setResultsController(ResultsController resultsController) {
+        this.resultsController = resultsController;
+    }
+
+    private static int columnNo = 0;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -109,7 +111,7 @@ public class DashboardController implements Initializable {
 
         // Create a tile for each table to be Scanned.
         for (int i = 0; i < AppData.tablesTobeScanned.size(); i++) {
-            TableToAnalyze row = new TableToAnalyze(Integer.toString(i+1),
+            TableToAnalyze row = new TableToAnalyze(Integer.toString(i + 1),
                     AppData.tablesTobeScanned.get(i).getTableDetail().getDb(),
                     AppData.tablesTobeScanned.get(i).getTableDetail().getSchema(),
                     AppData.tablesTobeScanned.get(i).getTableDetail().getTable(),
@@ -131,6 +133,7 @@ public class DashboardController implements Initializable {
      */
     private class PerformDatascan extends Task<Integer> {
         private ThreadPoolExecutor executor;
+        private List<Future<DataScanResult>> resultList = new ArrayList<>();    // holds results of Data scan
 
         private PerformDatascan() {
             executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(AppData.noThreads);
@@ -139,10 +142,6 @@ public class DashboardController implements Initializable {
         @Override
         protected Integer call() {
             try {
-                List<Future<DataScanResult>> resultList = new ArrayList<>();    // holds results of Data scan
-                List<DataScanActivity> tasks = new ArrayList<>();
-
-                int tableId = 0;
                 int maxParallelTasks = AppData.noThreads;
 
                 // If the tables to be scanned is less than Max threads specified, update the max tasks to be the number
@@ -150,8 +149,10 @@ public class DashboardController implements Initializable {
                 if (AppData.tablesTobeScanned.size() < AppData.noThreads)
                     maxParallelTasks = AppData.tablesTobeScanned.size();
 
-                Future<?>[] currentlyRunningTasks;
-                currentlyRunningTasks = new Future<?>[maxParallelTasks];
+                Future<?>[] currentlyRunningTasks = new Future<?>[maxParallelTasks];
+                int tableId = 0;
+                boolean allTablesScanned = false;
+                List<DataScanActivity> tasks = new ArrayList<>();
 
                 // This tracks the status of Tasks:
                 //      1 --> Task is running;
@@ -160,32 +161,27 @@ public class DashboardController implements Initializable {
                 for (int i = 0; i < maxParallelTasks; i++)
                     taskStatus.add(0);
 
-                boolean allTablesScanned = false;
-
                 logger.debug("Number of tables to be scanned: " + AppData.tablesTobeScanned.size());
                 logger.debug("Max parallel tasks: " + maxParallelTasks);
+
+                List<Integer> alreadyNoted = new ArrayList<>();
 
                 // Loop until all tables are scanned and all tasks are completed.
                 while (!allTablesScanned) {
                     for (int i = 0; i < maxParallelTasks && tableId < AppData.tablesTobeScanned.size(); i++) {
-                        TableToAnalyze tableToAnalyze = tableViewRows.get(i);
-
                         if (taskStatus.get(i) == 0) {
                             String tableName = AppData.tablesTobeScanned.get(tableId).getTableDetail().getTable();
                             logger.debug("Available position to submit task: " + i);
                             logger.debug("Table to be analyzed: " + tableName);
                             logger.debug("Table Id to be submitted: " + tableId);
+                            TableToAnalyze tableToAnalyze = tableViewRows.get(tableId);
 
-                            DataScanActivity task = new DataScanActivity(tableId, connections.get(i),
+                            DataScanActivity task = new DataScanActivity(
+                                    tableId,
+                                    connections.get(i),
                                     AppData.tablesTobeScanned.get(tableId).getTableDetail(),
                                     AppData.tablesTobeScanned.get(tableId).getColumnDetailList(),
                                     tableToAnalyze);
-
-                            Platform.runLater(() -> {
-                                ((ProgressIndicator) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(0))).setVisible(true);
-                                ((Label) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(1))).setText("RUNNING");
-                                ((Label) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(1))).setStyle("-fx-background-color: #065FD4; -fx-text-fill: white");
-                            });
 
                             tasks.add(task);
                             Future<DataScanResult> result = executor.submit(task);   // Submits a task via a Thread.
@@ -193,10 +189,17 @@ public class DashboardController implements Initializable {
                             currentlyRunningTasks[i] = result;                       // Holds only the currently running tasks. need this to monitor their progress.
                             taskStatus.set(i, 1);       // Change the status from 0 to 1.
                             tableId++;
+
+                            Platform.runLater(() -> {
+                                ((ProgressIndicator) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(0))).setVisible(true);
+                                ((Label) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(1))).setText("RUNNING");
+                                ((Label) (((HBox) (tableToAnalyze.getStatus())).getChildren().get(1))).setStyle("-fx-background-color: #065FD4; -fx-text-fill: white");
+                            });
                         }
                     }
 
-                    // Wait until at least one task is completed.
+                    // Wait until at least one task is completed. The loop breaks only if a currently running task is
+                    // completed ! otherwise, it waits indefinitely !
                     boolean breakTheLoop = false;
                     while (true) {
                         // Check all the currently running tasks and check if they're completed !!
@@ -204,16 +207,50 @@ public class DashboardController implements Initializable {
                             Future<DataScanResult> result = (Future<DataScanResult>) (currentlyRunningTasks[i]);
 
                             if (result.isDone()) {
-                                taskStatus.set(i, 0);            // Task at this place holder is free.
-                                breakTheLoop = true;
+                                if (!alreadyNoted.contains(result.get().getTaskId())) {
+                                    logger.info(String.format("Data analysis for table with Task ID: %d is completed\n%s", result.get().getTaskId(), result.get().toString()));
+                                    alreadyNoted.add(result.get().getTaskId());
+                                    taskStatus.set(i, 0);            // Task at this place holder is free.
+                                    breakTheLoop = true;
+
+                                    Platform.runLater(() -> {
+                                        try {
+                                            int completedTableId = result.get().getTaskId();
+                                            TableToAnalyze TableCompleted = tableViewRows.get(completedTableId);
+                                            ((ProgressIndicator) (((HBox) (TableCompleted.getStatus())).getChildren().get(0))).setVisible(false);
+                                            ((Label) (((HBox) (TableCompleted.getStatus())).getChildren().get(1))).setText("COMPLETED");
+                                            ((Label) (((HBox) (TableCompleted.getStatus())).getChildren().get(1))).setStyle("-fx-background-color: #005D57; -fx-text-fill: white");
+                                        } catch (InterruptedException ex) {
+                                            logStackTrace(ex);
+                                        } catch (ExecutionException ex) {
+                                            logStackTrace(ex);
+                                        }
+                                    });
+
+                                    for (String line : result.get().toString().split("\n")) {
+                                        if (line.split(":").length == 6) {
+                                            columnNo++;
+                                            String db = line.split(":")[1].trim();
+                                            String schema = line.split(":")[2].trim();
+                                            String table = line.split(":")[3].trim();
+                                            String column = line.split(":")[4].trim();
+                                            String comments = line.split(":")[5].trim();
+
+                                            DataAnalysisResultRecord dataAnalysisResultRecord = new
+                                                    DataAnalysisResultRecord(Integer.toString(columnNo), db, schema, table, column, "", "", comments);
+
+                                            resultsController.addRow(dataAnalysisResultRecord);
+                                        }
+                                    }
+                                    break;
+                                }
                             }
-//                            tasks.get(i).updateProgressCount();
                         }
 
                         // If none of the currently running tasks is completed, wait for some time !
-                        if (breakTheLoop == false) {
+                        if (!breakTheLoop) {
                             try {
-                                TimeUnit.MILLISECONDS.sleep(50);
+                                TimeUnit.MILLISECONDS.sleep(1000);
                             } catch (InterruptedException ex) {
                                 logStackTrace(ex);
                             }
@@ -239,8 +276,8 @@ public class DashboardController implements Initializable {
                     if (tableId >= AppData.tablesTobeScanned.size()) {
                         int count = 0;
 
-                        for (int i = 0; i < taskStatus.size(); i++)
-                            if (taskStatus.get(i) != 0)
+                        for (Integer status : taskStatus)
+                            if (status != 0)
                                 count = 1;
 
                         if (count == 0) {
@@ -251,11 +288,20 @@ public class DashboardController implements Initializable {
                         }
                     }
                 }
-
             } catch (Exception ex) {
                 logStackTrace(ex);
                 System.exit(1);
             }
+
+            try {
+                for (Future<DataScanResult> result : resultList)
+                    logger.info(result.get());
+            } catch (Exception e) {
+                logStackTrace(e);
+                executor.shutdown();
+                System.exit(1);
+            }
+
             return 0;
         }
 

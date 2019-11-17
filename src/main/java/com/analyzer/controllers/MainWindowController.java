@@ -7,7 +7,6 @@ import com.dbutils.common.TableDetail;
 import com.dbutils.oracle.OracleMetadata;
 import com.dbutils.sqlserver.SqlServerMetadata;
 import javafx.application.Platform;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -401,13 +400,34 @@ public class MainWindowController implements Initializable {
 
     @FXML
     private void performDataScan(ActionEvent event) {
+        ResultsController resultsController = null;
+        DashboardController dashboardController = null;
+
+        try {
+            URL url = new File("resources/ui/results.fxml").toURI().toURL();
+            FXMLLoader loader = new FXMLLoader(url);
+            BorderPane borderPane = (BorderPane) loader.load();
+            borderPane.prefWidthProperty().bind(databaseBtn.getScene().widthProperty());
+            borderPane.prefHeightProperty().bind(databaseBtn.getScene().heightProperty());
+            reportTab.setContent(borderPane);
+
+            resultsController = loader.getController();
+        } catch (Exception ex) {
+            logStackTrace(ex);
+        }
+
         try {
             URL url = new File("resources/ui/scan_dashboard.fxml").toURI().toURL();
-            BorderPane borderPane = (BorderPane) FXMLLoader.load(url);
+            FXMLLoader loader = new FXMLLoader(url);
+            BorderPane borderPane = (BorderPane) loader.load();
+            dashboardController = loader.getController();
+
             borderPane.prefWidthProperty().bind(databaseBtn.getScene().widthProperty());
             borderPane.prefHeightProperty().bind(databaseBtn.getScene().heightProperty());
             dashboardTab.setContent(borderPane);
             tabPane.getSelectionModel().select(dashboardTab);
+
+            dashboardController.setResultsController(resultsController);
         } catch (Exception ex) {
             logStackTrace(ex);
         }
