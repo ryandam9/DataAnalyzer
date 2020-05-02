@@ -1,3 +1,5 @@
-# Data Browser / Analyzer
+# Data Analyzer
 
-![](./images/Data-browser.gif)
+![](./images/data-analyzer.gif)
+
+****
